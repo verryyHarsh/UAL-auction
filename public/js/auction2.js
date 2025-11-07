@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let selectedPlayersForAuction = [];
   let currentPlayer = null;
   let auctionTimer = null;
-  let timeLeft = 5;
+  let timeLeft = 10;
   let currentBid = 0;
   let highestBidder = null;
   let auctionStarted = false;
@@ -453,7 +453,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const bidAmountMatch = buttonText.match(/₹(\d+\.?\d*) Cr/);
     if (bidAmountMatch) {
       const bidAmount = parseFloat(bidAmountMatch[1]);
-      timeLeft = 5;
+      timeLeft = 10;
       resetTimerAnimation();
       startTimerAnimation();
       startTimer();
@@ -537,7 +537,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     bidButtonText.textContent = `Bid for ₹${nextBidAmount.toFixed(2)} Cr`;
 
     resetTimerAnimation();
-    timeLeft = 5;
+    timeLeft = 10;
     startTimerAnimation();
     startTimer();
   }
@@ -557,7 +557,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const nextBidAmount = calculateNextBid(currentBid, currentPlayer.basePrice);
     bidButtonText.textContent = `Bid for ₹${nextBidAmount.toFixed(2)} Cr`;
 
-    timeLeft = 5;
+    timeLeft = 10;
     resetTimerAnimation();
     startTimerAnimation();
     startTimer();
@@ -576,7 +576,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     bidButtonText.textContent = "Bid for ₹0 Cr";
     stopTimerAnimation();
     clearInterval(auctionTimer);
-    timeLeft = 5;
+    timeLeft =10;
   }
 
   function getUserTeam(username) {

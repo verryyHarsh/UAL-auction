@@ -1,0 +1,1453 @@
+{
+  "players": [
+    {
+      "name": "Ruturaj Gaikwad",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/ruturaj gaikwad.png",
+      "category": "L1S1"
+    },
+    {
+      "name": "Shubman Gill",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/shubman gill.png",
+      "category": "L1S1"
+    },
+    {
+      "name": "Suryakumar Yadav",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/suryakumar yadav.png",
+      "category": "L1S1"
+    },
+    {
+      "name": "Virat Kohli",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/virat kholi.png",
+      "category": "L1S1"
+    },
+    {
+      "name": "Rohit Sharma",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/rohit sharma.png",
+      "category": "L1S1"
+    },
+    {
+      "name": "Yashaswi Jaiswal",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/yashaswi jaiswal.png",
+      "category": "L1S1"
+    },
+    {
+      "name": "Travis Head",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "AUS",
+      "role": "BAT",
+      "image": "images/PLAYERS/travis head.png",
+      "category": "L1S2"
+    },
+    {
+      "name": "Jos Buttler",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "ENG",
+      "role": "BAT",
+      "image": "images/PLAYERS/jos buttler.png",
+      "category": "L1S2"
+    },
+    {
+      "name": "Shreyas Iyer",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/shreyas iyer.png",
+      "category": "L1S2"
+    },
+    {
+      "name": "Rishabh Pant",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/rishab pant.png",
+      "category": "L1S2"
+    },
+    {
+      "name": "KL Rahul",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/kl rahul.png",
+      "category": "L1S2"
+    },
+    {
+      "name": "David Warner",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "AUS",
+      "role": "BAT",
+      "image": "images/PLAYERS/david warner.png",
+      "category": "L1S2"
+    },
+    {
+      "name": "Tim David",
+      "basePrice": 1.5,
+      "rating": 7,
+      "country": "AUS",
+      "role": "BAT",
+      "image": "images/PLAYERS/tim david.png",
+      "category": "L1S3"
+    },
+    {
+      "name": "David Miller",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "SA",
+      "role": "BAT",
+      "image": "images/PLAYERS/david miller.png",
+      "category": "L1S3"
+    },
+    {
+      "name": "Tilak Varma",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/tilak varma.png",
+      "category": "L1S3"
+    },
+    {
+      "name": "Rajat Patidar",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/rajat patidar.png",
+      "category": "L1S3"
+    },
+    {
+      "name": "Faf du Plessis",
+      "basePrice": 1.5,
+      "rating": 9,
+      "country": "SA",
+      "role": "BAT",
+      "image": "images/PLAYERS/faf du plessis.png",
+      "category": "L1S3"
+    },
+    {
+      "name": "Ajinkya Rahane",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/ajinkya rahane.png",
+      "category": "L1S3"
+    },
+    {
+      "name": "Tristan Stubbs",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "SA",
+      "role": "BAT",
+      "image": "images/PLAYERS/tristan stubbs.png",
+      "category": "L1S4"
+    },
+    {
+      "name": "Rinku Singh",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/rinku singh.png",
+      "category": "L1S4"
+    },
+    {
+      "name": "Shashank Singh",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/shashank singh.png",
+      "category": "L1S4"
+    },
+    {
+      "name": "Abhishek Sharma",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/abhishek sharma.png",
+      "category": "L1S4"
+    },
+    {
+      "name": "Riyan Parag",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/riyan parag.png",
+      "category": "L1S4"
+    },
+    {
+      "name": "Shimron Hetmyer",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "WI",
+      "role": "BAT",
+      "image": "images/PLAYERS/shimron hetmyer.png",
+      "category": "L1S4"
+    },
+    {
+      "name": "Jake Fraser-McGurk",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "AUS",
+      "role": "BAT",
+      "image": "images/PLAYERS/jake fraser-mcgurk.png",
+      "category": "L1S4"
+    },
+    {
+      "name": "Devon Conway",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "NZ",
+      "role": "BAT",
+      "image": "images/PLAYERS/devon conway.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Aiden Markram",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "SA",
+      "role": "BAT",
+      "image": "images/PLAYERS/aiden markram.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Devdutt Padikkal",
+      "basePrice": 1,
+      "rating": 6,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/devdutt padikkal.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Rahul Tripathi",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/rahul tripathi.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Rovman Powell",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "WI",
+      "role": "BAT",
+      "image": "images/PLAYERS/rovman powell.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Glenn Phillips",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "NZ",
+      "role": "BAT",
+      "image": "images/PLAYERS/glenn phillips.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Kane Williamson",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "NZ",
+      "role": "BAT",
+      "image": "images/PLAYERS/kane williamson.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Manish Pandey",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/manish pandey.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Rilee Rossouw",
+      "basePrice": 1,
+      "rating": 6,
+      "country": "SA",
+      "role": "BAT",
+      "image": "images/PLAYERS/rilee rossouw.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Deepak Hooda",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/deepak hooda.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Jacob Bethell",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "ENG",
+      "role": "BAT",
+      "image": "images/PLAYERS/jacob bethell.png",
+      "category": "L1S5"
+    },
+    {
+      "name": "Prithvi Shaw",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/prithvi shaw.png",
+      "category": "L1S6"
+    },
+    {
+      "name": "Ramandeep Singh",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/ramandeep singh.png",
+      "category": "L1S6"
+    },
+    {
+      "name": "Ayush Badoni",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/ayush badoni.png",
+      "category": "L1S6"
+    },
+    {
+      "name": "Sai Sudharsan",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/sai sudharsan.png",
+      "category": "L1S6"
+    },
+    {
+      "name": "Shahrukh Khan",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "BAT",
+      "image": "images/PLAYERS/shahrukh khan.png",
+      "category": "L1S6"
+    },
+    {
+      "name": "Dewald Brevis",
+      "basePrice": 0.5,
+      "rating": 7,
+      "country": "SA",
+      "role": "BAT",
+      "image": "images/PLAYERS/dewald brevis.png",
+      "category": "L1S6"
+    },
+    {
+      "name": "Jasprit Bumrah",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/jasprit bumrah.png",
+      "category": "L2S1"
+    },
+    {
+      "name": "Sandeep Singh",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/sandeep singh.png",
+      "category": "L2S1"
+    },
+    {
+      "name": "Kagiso Rabada",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "SA",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/kagiso rabada.png",
+      "category": "L2S1"
+    },
+    {
+      "name": "Arshdeep Singh",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/arshdeep singh.png",
+      "category": "L2S1"
+    },
+    {
+      "name": "Mohd Shami",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/mohd shami.png",
+      "category": "L2S1"
+    },
+    {
+      "name": "Mitchell Starc",
+      "basePrice": 2,
+      "rating": 8,
+      "country": "AUS",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/mitchell starc.png",
+      "category": "L2S1"
+    },
+    {
+      "name": "Bhuvneshwar Kumar",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/bhuvneshwar kumar.png",
+      "category": "L2S1"
+    },
+    {
+      "name": "Trent Boult",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "NZ",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/trent boult.png",
+      "category": "L2S1"
+    },
+    {
+      "name": "Deepak Chahar",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/deepak chahar.png",
+      "category": "L2S2"
+    },
+    {
+      "name": "Josh Hazlewood",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "AUS",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/josh hazlewood.png",
+      "category": "L2S2"
+    },
+    {
+      "name": "Jofra Archer",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "ENG",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/jofra archer.png",
+      "category": "L2S2"
+    },
+    {
+      "name": "Mohd Siraj",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/mohd siraj.png",
+      "category": "L2S2"
+    },
+    {
+      "name": "Matheesha Pathirana",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "SL",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/mathessha pathirana.png",
+      "category": "L2S2"
+    },
+    {
+      "name": "Harshit Rana",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/harshit rana.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "Syed Khaleel Ahmed",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/syed khaleel ahmed.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "Mayank Yadav",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/mayank yadav.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "Avesh Khan",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/avesh khan.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "T Natarajan",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/t natarajan.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "Anrich Nortje",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "SA",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/anrich nortje.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "Gerald Coetzee",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "SA",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/gerald coetzee.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "Lockie Ferguson",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "NZ",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/lockie ferguson.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "Mustafizur Rahman",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "BAN",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/mustafizur rahman.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "Ishant Sharma",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/ishant sharma.png",
+      "category": "L2S3"
+    },
+    {
+      "name": "Naveen ul Haq",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "AFG",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/naveen-ul-haq.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Umesh Yadav",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/umesh yadav.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Yash Dayal",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/yash dayal.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Mukesh Kumar",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/mukesh kumar.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Tushar Deshpande",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/tushar deshpande.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Prasidh Krishna",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/prasidh krishna.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Mohsin Khan",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/mohsin khan.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Akash Deep",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/akash deep.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Romario Shepherd",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "WI",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/romario shepherd.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Umran Malik",
+      "basePrice": 0.5,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/umran malik.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Jaydev Unadkat",
+      "basePrice": 0.5,
+      "rating": 7,
+      "country": "IND",
+      "role": "FBOWL",
+      "image": "images/PLAYERS/jaydev unadkat.png",
+      "category": "L2S4"
+    },
+    {
+      "name": "Yuzvendra Chahal",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "SPIN",
+      "image": "images/PLAYERS/yuzi chahal.png",
+      "category": "L3S1"
+    },
+    {
+      "name": "Rashid Khan",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "AFG",
+      "role": "SPIN",
+      "image": "images/PLAYERS/rashid khan.png",
+      "category": "L3S1"
+    },
+    {
+      "name": "Kuldeep Yadav",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "IND",
+      "role": "SPIN",
+      "image": "images/PLAYERS/kuldeep yadav.png",
+      "category": "L3S1"
+    },
+    {
+      "name": "Ravi Bishnoi",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "IND",
+      "role": "SPIN",
+      "image": "images/PLAYERS/ravi bishnoi.png",
+      "category": "L3S1"
+    },
+    {
+      "name": "Varun Chakaravarthy",
+      "basePrice": 1.5,
+      "rating": 9,
+      "country": "IND",
+      "role": "SPIN",
+      "image": "images/PLAYERS/varun chakaravarthy.png",
+      "category": "L3S1"
+    },
+    {
+      "name": "Noor Ahmad",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "AFG",
+      "role": "SPIN",
+      "image": "images/PLAYERS/noor ahmad.png",
+      "category": "L3S1"
+    },
+    {
+      "name": "Rahul Chahar",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "SPIN",
+      "image": "images/PLAYERS/rahul chahar.png",
+      "category": "L3S2"
+    },
+    {
+      "name": "Maheesh Theekshana",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "SL",
+      "role": "SPIN",
+      "image": "images/PLAYERS/maheesh theekshana.png",
+      "category": "L3S2"
+    },
+    {
+      "name": "Wanindu Hasaranga",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "SL",
+      "role": "SPIN",
+      "image": "images/PLAYERS/wanindu hasaranga.png",
+      "category": "L3S2"
+    },
+    {
+      "name": "Keshav Maharaj",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "SA",
+      "role": "SPIN",
+      "image": "images/PLAYERS/keshav maharaj.png",
+      "category": "L3S2"
+    },
+    {
+      "name": "Mujeeb Ur Rahman",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "AFG",
+      "role": "SPIN",
+      "image": "images/PLAYERS/mujeeb ur rahman.png",
+      "category": "L3S2"
+    },
+    {
+      "name": "Adil Rashid",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "ENG",
+      "role": "SPIN",
+      "image": "images/PLAYERS/adil rashid.png",
+      "category": "L3S2"
+    },
+    {
+      "name": "Akeal Hosein",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "WI",
+      "role": "SPIN",
+      "image": "images/PLAYERS/akeal hosein.png",
+      "category": "L3S2"
+    },
+    {
+      "name": "Adam Zampa",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "AUS",
+      "role": "SPIN",
+      "image": "images/PLAYERS/adam zampa.png",
+      "category": "L3S2"
+    },
+    {
+      "name": "Shivam Dube",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/shivam dube.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Sunil Narine",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "WI",
+      "role": "ALL",
+      "image": "images/PLAYERS/sunil narine.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Ravindra Jadeja",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/ravindra jadeja.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Hardik Pandya",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/hardik pandya.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Andre Russell",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "WI",
+      "role": "ALL",
+      "image": "images/PLAYERS/andre russell.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Ravichandran Ashwin",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/ravichandaran ashwin.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Glenn Maxwell",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "AUS",
+      "role": "ALL",
+      "image": "images/PLAYERS/glenn maxwell.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Marcus Stoinis",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "AUS",
+      "role": "ALL",
+      "image": "images/PLAYERS/marcus stoinis.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Axar Patel",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/axar patel.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Pat Cummins",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "AUS",
+      "role": "ALL",
+      "image": "images/PLAYERS/pat cummins.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Washington Sundar",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/washington sundar.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Will Jacks",
+      "basePrice": 1.5,
+      "rating": 8,
+      "country": "ENG",
+      "role": "ALL",
+      "image": "images/PLAYERS/will jacks.png",
+      "category": "L4S1"
+    },
+    {
+      "name": "Mitchell Santner",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "NZ",
+      "role": "ALL",
+      "image": "images/PLAYERS/mitchell santner.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Moeen Ali",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "ENG",
+      "role": "ALL",
+      "image": "images/PLAYERS/moeen ali.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Shardul Thakur",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/shardul thakur.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Nitish Rana",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/nitish rana.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Krunal Pandya",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/krunal pandya.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Sam Curran",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "ENG",
+      "role": "ALL",
+      "image": "images/PLAYERS/sam curran.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Nitesh Kumar Reddy",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/nitesh kumar reddy.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Harshal Patel",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/harshal patel.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Mitchell Marsh",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "AUS",
+      "role": "ALL",
+      "image": "images/PLAYERS/mitchell marsh.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Venkatesh Iyer",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/venkatesh iyer.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Liam Livingstone",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "ENG",
+      "role": "ALL",
+      "image": "images/PLAYERS/liam livingstone.png",
+      "category": "L4S2"
+    },
+    {
+      "name": "Rachin Ravindra",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "NZ",
+      "role": "ALL",
+      "image": "images/PLAYERS/rachin ravindra.png",
+      "category": "L4S3"
+    },
+    {
+      "name": "Rahul Tewatia",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/rahul tewatia.png",
+      "category": "L4S3"
+    },
+    {
+      "name": "Marco Jansen",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "SA",
+      "role": "ALL",
+      "image": "images/PLAYERS/marco jansen.png",
+      "category": "L4S3"
+    },
+    {
+      "name": "Jamie Overton",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "ENG",
+      "role": "ALL",
+      "image": "images/PLAYERS/jamie overton.png",
+      "category": "L4S3"
+    },
+    {
+      "name": "Sikander Raza",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "ZIM",
+      "role": "ALL",
+      "image": "images/PLAYERS/sikander raza.png",
+      "category": "L4S3"
+    },
+    {
+      "name": "Azmatullah Omarzai",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "AFG",
+      "role": "ALL",
+      "image": "images/PLAYERS/azmatullah omarzai.png",
+      "category": "L4S3"
+    },
+    {
+      "name": "Sai Kishore",
+      "basePrice": 0.5,
+      "rating": 7,
+      "country": "IND",
+      "role": "ALL",
+      "image": "images/PLAYERS/sai kishore.png",
+      "category": "L4S3"
+    },
+    {
+      "name": "Daryl Mitchell",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "NZ",
+      "role": "ALL",
+      "image": "images/PLAYERS/daryl mitchell.png",
+      "category": "L4S3"
+    },
+    {
+      "name": "MS Dhoni",
+      "basePrice": 2,
+      "rating": 10,
+      "country": "IND",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/ms dhoni.png",
+      "category": "L5S1"
+    },
+    {
+      "name": "Phil Salt",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "ENG",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/phil salt.png",
+      "category": "L5S1"
+    },
+    {
+      "name": "Ishan Kishan",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/ishan kishan.png",
+      "category": "L5S1"
+    },
+    {
+      "name": "Heinrich Klaasen",
+      "basePrice": 2,
+      "rating": 8,
+      "country": "SA",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/heinrich klaasen.png",
+      "category": "L5S1"
+    },
+    {
+      "name": "Nicholas Pooran",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "WI",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/nicholas pooran.png",
+      "category": "L5S1"
+    },
+    {
+      "name": "Sanju Samson",
+      "basePrice": 2,
+      "rating": 9,
+      "country": "IND",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/sanju samson.png",
+      "category": "L5S1"
+    },
+    {
+      "name": "Quinton de Kock",
+      "basePrice": 2,
+      "rating": 8,
+      "country": "SA",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/quinton de kock.png",
+      "category": "L5S1"
+    },
+    {
+      "name": "Jitesh Sharma",
+      "basePrice": 1.5,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/jitesh sharma.png",
+      "category": "L5S2"
+    },
+    {
+      "name": "Jonny Bairstow",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "ENG",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/jonny bairstow.png",
+      "category": "L5S2"
+    },
+    {
+      "name": "Dhruv Jurel",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/dhruv jurel.png",
+      "category": "L5S2"
+    },
+    {
+      "name": "Prabhsimran Singh",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/prabhsimran singh.png",
+      "category": "L5S2"
+    },
+    {
+      "name": "Rahmanullah Gurbaz",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "AFG",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/rahmanullah gurbaz.png",
+      "category": "L5S2"
+    },
+    {
+      "name": "Abhishek Porel",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "IND",
+      "role": "BAT WK",
+      "image": "images/PLAYERS/abhishek porel.png",
+      "category": "L5S2"
+    },
+    {
+      "name": "Karun Nair",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BAT",
+      "image": "images/PLAYERS/karun nair.png",
+      "category": "L6S1"
+    },
+    {
+      "name": "Angkrish Raghuvanshi",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "UC-BAT",
+      "image": "images/PLAYERS/angkrish raghuvanshi.png",
+      "category": "L6S1"
+    },
+    {
+      "name": "Nehal Wadhera",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "UC-BAT",
+      "image": "images/PLAYERS/nehal wadhera.png",
+      "category": "L6S1"
+    },
+    {
+      "name": "Atharva Taide",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BAT",
+      "image": "images/PLAYERS/atharva taide.png",
+      "category": "L6S1"
+    },
+    {
+      "name": "Anmolpreet Singh",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BAT",
+      "image": "images/PLAYERS/anmolpreet singh.png",
+      "category": "L6S1"
+    },
+    {
+      "name": "Abhinav Manohar",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BAT",
+      "image": "images/PLAYERS/abhinav manohar.png",
+      "category": "L6S1"
+    },
+    {
+      "name": "Yash Dhull",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BAT",
+      "image": "images/PLAYERS/yash dhull.png",
+      "category": "L6S1"
+    },
+    {
+      "name": "Mohit Sharma",
+      "basePrice": 1,
+      "rating": 8,
+      "country": "IND",
+      "role": "UC-BOWL",
+      "image": "images/PLAYERS/mohit sharma.png",
+      "category": "L8S1"
+    },
+    {
+      "name": "Akash Madhwal",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "UC-BOWL",
+      "image": "images/PLAYERS/akash madhwal.png",
+      "category": "L8S1"
+    },
+    {
+      "name": "Rasikh Dar",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BOWL",
+      "image": "images/PLAYERS/rasikh dar.png",
+      "category": "L8S1"
+    },
+    {
+      "name": "Vaibhav Arora",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BOWL",
+      "image": "images/PLAYERS/vaibhav arora.png",
+      "category": "L8S1"
+    },
+    {
+      "name": "Simarjeet Singh",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BOWL",
+      "image": "images/PLAYERS/simarjeet singh.png",
+      "category": "L8S1"
+    },
+    {
+      "name": "Yash Thakur",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BOWL",
+      "image": "images/PLAYERS/yash thakur.png",
+      "category": "L8S1"
+    },
+    {
+      "name": "Kartik Tyagi",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-BOWL",
+      "image": "images/PLAYERS/kartik tyagi.png",
+      "category": "L8S1"
+    },
+    {
+      "name": "Piyush Chawla",
+      "basePrice": 1,
+      "rating": 7,
+      "country": "IND",
+      "role": "UC-SPIN",
+      "image": "images/PLAYERS/piyush chawla.png",
+      "category": "L9S1"
+    },
+    {
+      "name": "Mayank Markande",
+      "basePrice": 0.75,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-SPIN",
+      "image": "images/PLAYERS/mayank markande.png",
+      "category": "L9S1"
+    },
+    {
+      "name": "Shreyas Gopal",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-SPIN",
+      "image": "images/PLAYERS/shreyash gopal.png",
+      "category": "L9S1"
+    },
+    {
+      "name": "Suyash Sharma",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-SPIN",
+      "image": "images/PLAYERS/suyash sharma.png",
+      "category": "L9S1"
+    },
+    {
+      "name": "Karn Sharma",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-SPIN",
+      "image": "images/PLAYERS/karn sharma.png",
+      "category": "L9S1"
+    },
+    {
+      "name": "Kumar Kartikeya Singh",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-SPIN",
+      "image": "images/PLAYERS/kumar kartikeya singh.png",
+      "category": "L9S1"
+    },
+    {
+      "name": "Harpreet Brar",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "UC-ALL",
+      "image": "images/PLAYERS/harpreet brar.png",
+      "category": "L7S1"
+    },
+    {
+      "name": "Naman Dhir",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "UC-ALL",
+      "image": "images/PLAYERS/naman dhir.png",
+      "category": "L7S1"
+    },
+    {
+      "name": "Mahipal Lomror",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "UC-ALL",
+      "image": "images/PLAYERS/mahipal lomror.png",
+      "category": "L7S1"
+    },
+    {
+      "name": "Abdul Samad",
+      "basePrice": 0.75,
+      "rating": 7,
+      "country": "IND",
+      "role": "UC-ALL",
+      "image": "images/PLAYERS/abdul samad.png",
+      "category": "L7S1"
+    },
+    {
+      "name": "Sameer Rizvi",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-ALL",
+      "image": "images/PLAYERS/sameer rizvi.png",
+      "category": "L7S1"
+    },
+    {
+      "name": "Vijay Shankar",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-ALL",
+      "image": "images/PLAYERS/vijay shankar.png",
+      "category": "L7S1"
+    },
+    {
+      "name": "Ashutosh Sharma",
+      "basePrice": 0.5,
+      "rating": 6,
+      "country": "IND",
+      "role": "UC-ALL",
+      "image": "images/PLAYERS/ashutosh sharma.png",
+      "category": "L7S1"
+    }
+  ]
+}

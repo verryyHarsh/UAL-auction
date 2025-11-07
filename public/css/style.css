@@ -504,7 +504,7 @@ body {
 }
 
 .bid-button.timer-active::before {
-  animation: lineTimer 5s linear forwards;
+  animation: lineTimer 10s linear forwards;
 }
 
 @keyframes lineTimer {

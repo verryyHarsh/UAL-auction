@@ -242,6 +242,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   socket.on("bidUpdate", (bidData) => {
+    if (bidData.amount > currentBid && bidData.bidder !== username) {
+      clickSound.play();
+    }
     updateBid(bidData);
   });
 
@@ -274,7 +277,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     socket.emit("endAuction", roomCode);
   });
 
+  const clickSound = new Audio("/music/button-press.wav"); // ✅ remove '/public'
+  clickSound.volume = 0.6;
+
   bidButton.addEventListener("click", handleBidButtonClick);
+
+  bidButton.addEventListener("click", () => {
+    clickSound.currentTime = 0;
+    clickSound.play();
+  });
 
   // ========== PLAYER SELECTION LOGIC ==========
   function calculateRequiredPlayers(teamCount) {
@@ -576,7 +587,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     bidButtonText.textContent = "Bid for ₹0 Cr";
     stopTimerAnimation();
     clearInterval(auctionTimer);
-    timeLeft =10;
+    timeLeft = 10;
   }
 
   function getUserTeam(username) {
@@ -620,6 +631,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     updateTeamBoxesFromActiveTeams();
+    updateAuctionSummary(activeTeams, budget); // Update summary when player is sold
     resetBiddingBox();
 
     // Check if auction should end after player is sold
@@ -670,7 +682,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.head.insertAdjacentHTML("beforeend", completionStyles);
 
   // ========== SOCKET EVENT FOR REQUESTING AUCTION END ==========
-  // Add this to your socket event handlers
   socket.on("auctionCompletionRequested", (data) => {
     if (isAdmin) {
       showModal(
@@ -762,6 +773,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     updateTeamBoxesFromActiveTeams();
+    updateAuctionSummary(activeTeams, budget); // Update summary when room state loads
 
     // Check if auction should end when room state is loaded
     if (auctionStarted) {
@@ -771,7 +783,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // ========== RESULTS SUMMARY FUNCTIONS ==========
   // ========== RESULTS SUMMARY FUNCTIONS ==========
   function showAuctionResults() {
     try {
@@ -794,101 +805,140 @@ document.addEventListener("DOMContentLoaded", async () => {
       return ratingB - ratingA;
     });
 
-    // Display top 3 teams
-    if (rankedTeams.length > 0) displayTeamRanking(rankedTeams[0], "champion");
-    if (rankedTeams.length > 1) displayTeamRanking(rankedTeams[1], "runnerUp");
-    if (rankedTeams.length > 2)
-      displayTeamRanking(rankedTeams[2], "thirdPlace");
+    // Find the most expensive player in the entire auction
+    const mostExpensivePlayer = findMostExpensivePlayer();
 
-    // Calculate and display MVP (team owner)
-    calculateMVP(rankedTeams);
-  }
+    // Update highest bid information in results modal
+    updateResultsHighestBidInfo(mostExpensivePlayer);
 
-  function displayTeamRanking(team, rank) {
-    const remainingPurse = budget - (team.totalSpent || 0);
-
-    // Safely update elements
-    const logoEl = document.getElementById(`${rank}TeamLogo`);
-    const nameEl = document.getElementById(`${rank}TeamName`);
-    const ownerEl = document.getElementById(`${rank}TeamOwner`);
-    const ratingEl = document.getElementById(`${rank}TeamRating`);
-    const purseEl = document.getElementById(`${rank}TeamPurse`);
-
-    if (logoEl) logoEl.src = `images/${team.teamName}.png`;
-    if (nameEl) nameEl.textContent = team.fullName;
-    if (ownerEl && ownerEl.querySelector("span"))
-      ownerEl.querySelector("span").textContent = team.owner;
-    if (ratingEl && ratingEl.querySelector("span"))
-      ratingEl.querySelector("span").textContent = (
-        team.totalRating || 0
-      ).toFixed(1);
-    if (purseEl && purseEl.querySelector("span"))
-      purseEl.querySelector("span").textContent = `₹${remainingPurse.toFixed(
-        2
-      )} Cr`;
-  }
-
-  function calculateMVP(teams) {
-    if (teams.length === 0) return;
-
-    // MVP is the owner of the champion team (highest rating)
-    const championTeam = teams[0];
-
-    // Calculate value efficiency (rating per crore spent)
-    const totalSpent = championTeam.totalSpent || 0;
-    const totalRating = championTeam.totalRating || 0;
-    const efficiency = totalSpent > 0 ? totalRating / totalSpent : totalRating;
-
-    displayMVP(championTeam, efficiency);
-  }
-
-  function displayMVP(team, efficiency) {
-    const remainingPurse = budget - (team.totalSpent || 0);
-
-    // Update MVP elements for TEAM OWNER
-    const imageEl = document.getElementById("mvpTeamLogo");
-    const nameEl = document.getElementById("mvpOwnerName");
-    const teamNameEl = document.getElementById("mvpTeamName");
-    const ratingEl = document.getElementById("mvpTeamRating");
-    const purseEl = document.getElementById("mvpTeamPurse");
-    const reasonEl = document.getElementById("mvpReasonText");
-
-    if (imageEl) imageEl.src = `images/${team.teamName}.png`;
-    if (nameEl) nameEl.textContent = team.owner;
-    if (teamNameEl && teamNameEl.querySelector("span"))
-      teamNameEl.querySelector("span").textContent = team.fullName;
-    if (ratingEl && ratingEl.querySelector("span"))
-      ratingEl.querySelector("span").textContent = (
-        team.totalRating || 0
-      ).toFixed(1);
-    if (purseEl && purseEl.querySelector("span"))
-      purseEl.querySelector("span").textContent = `₹${remainingPurse.toFixed(
-        2
-      )} Cr`;
-
-    // Dynamic MVP reason based on team performance
-    let reason = "";
-    const rating = team.totalRating || 0;
-
-    if (rating > 80)
-      reason =
-        "Master strategist - built an exceptional team with outstanding balance";
-    else if (rating > 70)
-      reason = "Brilliant auction tactics - created a powerhouse squad";
-    else if (rating > 60)
-      reason = "Smart bidding - constructed a well-balanced competitive team";
-    else if (rating > 50)
-      reason = "Solid team building - good value picks throughout the auction";
-    else reason = "Strategic approach - built a functional team within budget";
-
-    // Add efficiency note for high-value teams
-    if (efficiency > 1.5) {
-      reason += " with exceptional value for money";
-    } else if (efficiency > 1.2) {
-      reason += " with great budget management";
+    // Update MVP (highest rated team)
+    if (rankedTeams.length > 0) {
+      updateResultsMVPInfo(rankedTeams[0]);
     }
 
-    if (reasonEl) reasonEl.textContent = reason;
+    // Update team rankings in results modal
+    updateResultsTeamRankings(rankedTeams);
+  }
+
+  function findMostExpensivePlayer() {
+    let mostExpensive = null;
+    let highestPrice = 0;
+
+    Object.values(activeTeams).forEach((team) => {
+      (team.players || []).forEach((player) => {
+        const playerPrice = parseFloat(player.price) || 0;
+        if (playerPrice > highestPrice) {
+          highestPrice = playerPrice;
+          mostExpensive = {
+            ...player,
+            team: team.teamName,
+          };
+        }
+      });
+    });
+
+    return mostExpensive;
+  }
+
+  function updateResultsHighestBidInfo(mostExpensivePlayer) {
+    const highestBidPlayerImg = document.getElementById(
+      "resultsHighestBidPlayerImg"
+    );
+    const highestBidPrice = document.getElementById("resultsHighestBidPrice");
+    const highestBidTeam = document.getElementById("resultsHighestBidTeam");
+
+    if (highestBidPlayerImg && mostExpensivePlayer) {
+      // Use the player image from your players data
+      const playerImage =
+        mostExpensivePlayer.image ||
+        `/images/PLAYERS/${mostExpensivePlayer.playerName
+          ?.toLowerCase()
+          .replace(/\s+/g, " ")}.png` ||
+        "https://via.placeholder.com/120?text=PLAYER";
+
+      highestBidPlayerImg.src = playerImage;
+      highestBidPlayerImg.alt =
+        mostExpensivePlayer.playerName || "Most Expensive Player";
+      highestBidPlayerImg.style.display = "block";
+
+      // Add error handling for broken images
+      highestBidPlayerImg.onerror = function () {
+        this.src = "https://via.placeholder.com/120?text=PLAYER";
+        this.alt = "Player Image Not Available";
+      };
+    } else if (highestBidPlayerImg) {
+      highestBidPlayerImg.src =
+        "https://via.placeholder.com/120?text=NO+PLAYER";
+      highestBidPlayerImg.alt = "No player sold";
+    }
+
+    if (highestBidPrice) {
+      highestBidPrice.textContent = mostExpensivePlayer
+        ? `₹${(parseFloat(mostExpensivePlayer.price) || 0).toFixed(2)}CR`
+        : "₹0.00CR";
+    }
+
+    if (highestBidTeam) {
+      highestBidTeam.textContent = mostExpensivePlayer
+        ? `sold to ${mostExpensivePlayer.team}`
+        : "No players sold";
+    }
+  }
+
+  function updateResultsMVPInfo(team) {
+    const mvpTeamLogo = document.getElementById("resultsMvpTeamLogo");
+    if (mvpTeamLogo && team) {
+      mvpTeamLogo.src = `images/${team.teamName}.png`;
+      mvpTeamLogo.alt = team.fullName;
+    }
+  }
+
+  function updateResultsTeamRankings(rankedTeams) {
+    // Update first place team
+    if (rankedTeams.length > 0) {
+      updateResultsTeamCard("First", rankedTeams[0]);
+    }
+
+    // Update second place team
+    if (rankedTeams.length > 1) {
+      updateResultsTeamCard("Second", rankedTeams[1]);
+    }
+
+    // Update third place team
+    if (rankedTeams.length > 2) {
+      updateResultsTeamCard("Third", rankedTeams[2]);
+    }
+  }
+
+  function updateResultsTeamCard(position, team) {
+    const teamLogo = document.getElementById(`results${position}TeamLogo`);
+    const teamRating = document.getElementById(`results${position}TeamRating`);
+    const teamPlayer = document.getElementById(`results${position}TeamPlayer`);
+    const teamPlayerPrice = document.getElementById(
+      `results${position}TeamPlayerPrice`
+    );
+
+    if (teamLogo) {
+      teamLogo.src = `images/${team.teamName}.png`;
+      teamLogo.alt = team.fullName;
+    }
+
+    if (teamRating) {
+      teamRating.textContent = `RATING: ${(team.totalRating || 0).toFixed(0)}`;
+    }
+
+    // Find highest priced player for this team
+    const highestPricedPlayer = findHighestPricedPlayer(team.players || []);
+
+    if (teamPlayer) {
+      teamPlayer.textContent = highestPricedPlayer?.playerName || "No player";
+    }
+
+    if (teamPlayerPrice) {
+      teamPlayerPrice.textContent = highestPricedPlayer
+        ? `₹${(parseFloat(highestPricedPlayer.price) || 0).toFixed(2)}CR`
+        : "0.00CR";
+    }
   }
 
   function shareResults() {
@@ -1330,23 +1380,27 @@ document.addEventListener("DOMContentLoaded", async () => {
       teamBoxesContainer.appendChild(rowDiv);
     }
 
+    // Update auction summary when team boxes are updated
+    updateAuctionSummary(activeTeams, budget);
+
     // Check if auction should end after updating team boxes
     setTimeout(() => {
       checkAuctionCompletion();
     }, 100);
-
-    updateAuctionSummary(activeTeams, budget);
   }
 
   function handleTeamDataUpdated(teamData) {
     Object.keys(teamData).forEach((teamName) => {
       if (activeTeams[teamName]) {
         activeTeams[teamName].players = teamData[teamName].players || [];
-        activeTeams[teamName].totalSpent = teamData[teamName].totalSpent || 0;
-        activeTeams[teamName].totalRating = teamData[teamName].totalRating || 0;
+        activeTeams[teamName].totalSpent =
+          parseFloat(teamData[teamName].totalSpent) || 0;
+        activeTeams[teamName].totalRating =
+          parseFloat(teamData[teamName].totalRating) || 0;
       }
     });
     updateTeamBoxesFromActiveTeams();
+    updateAuctionSummary(activeTeams, budget); // Update summary when team data updates
   }
 
   // ========== DEBUG AND UTILITY FUNCTIONS ==========

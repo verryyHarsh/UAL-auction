@@ -197,180 +197,103 @@
       </div>
     </div>
 
-    <!-- result -->
-    <!-- Replace the entire results modal in auction.html -->
+    <!-- summary -->
+    <!-- Results Modal - New Design -->
     <div id="resultsModal" class="modal fade" tabindex="-1" aria-hidden="true">
-      <div
-        class="modal-dialog modal-xl modal-dialog-centered results-modal-dialog"
-      >
-        <div class="modal-content results-modal-content">
-          <div class="modal-header results-header">
-            <h2 class="modal-title">🎉 AUCTION COMPLETED!</h2>
-            <button
-              type="button"
-              class="btn-close btn-close-white"
-              data-bs-dismiss="modal"
-              aria-label="Close"
-            ></button>
-          </div>
-          <div class="modal-body results-body">
-            <div class="results-container">
-              <!-- MVP Section -->
-              <div class="results-mvp-section">
-                <h3 class="section-title">🏆 MOST VALUABLE OWNER</h3>
-                <div class="mvp-card">
-                  <div class="mvp-image">
-                    <img
-                      id="mvpTeamLogo"
-                      src=""
-                      alt="MVP Team"
-                      class="mvp-logo"
-                    />
+      <div class="modal-dialog modal-dialog-centered">
+        <div
+          class="modal-content"
+          style="background: transparent; border: none"
+        >
+          <div class="container1" style="margin: 0 auto">
+            <button class="close-btn" data-bs-dismiss="modal">×</button>
+            <div class="head">
+              <div class="highest">
+                <div class="playerimg">
+                  <img
+                    id="resultsHighestBidPlayerImg"
+                    src=""
+                    alt="Highest Bid Player"
+                  />
+                </div>
+                <div class="detail">
+                  <div class="price" id="resultsHighestBidPrice">₹0.00CR</div>
+                  <div class="teamname" id="resultsHighestBidTeam">
+                    No bids yet
                   </div>
-                  <div class="mvp-details">
-                    <h4 id="mvpOwnerName" class="mvp-name">Owner Name</h4>
-                    <div class="mvp-stats">
-                      <div class="stat-item">
-                        <span class="stat-label">Team:</span>
-                        <span id="mvpTeamName" class="stat-value">-</span>
-                      </div>
-                      <div class="stat-item">
-                        <span class="stat-label">Total Rating:</span>
-                        <span id="mvpTeamRating" class="stat-value">-</span>
-                      </div>
-                      <div class="stat-item">
-                        <span class="stat-label">Remaining Purse:</span>
-                        <span id="mvpTeamPurse" class="stat-value">-</span>
-                      </div>
+                </div>
+              </div>
+              <div class="mvp">
+                <div class="mvpdetail">MVP</div>
+                <div class="mpvteamimg">
+                  <img id="resultsMvpTeamLogo" src="" alt="MVP Team" />
+                </div>
+              </div>
+            </div>
+            <div class="standing">
+              <div class="one">
+                <div class="teambox-one">
+                  <div class="box">
+                    <img id="resultsFirstTeamLogo" src="" alt="1st Team" />
+                  </div>
+                  <div class="boxdetail-one">
+                    <div class="rank">1ST</div>
+                    <div class="rating" id="resultsFirstTeamRating">
+                      RATING: 0
                     </div>
-                    <div class="mvp-reason">
-                      <span class="reason-label">Reason:</span>
-                      <span id="mvpReasonText" class="reason-text">-</span>
+                    <div class="higestbuy" id="resultsFirstTeamPlayer">
+                      No player
+                    </div>
+                    <div
+                      class="higestbuyprice"
+                      id="resultsFirstTeamPlayerPrice"
+                    >
+                      0.00CR
                     </div>
                   </div>
                 </div>
               </div>
-
-              <!-- Final Standings -->
-              <div class="rankings-section">
-                <h3 class="section-title">📊 FINAL STANDINGS</h3>
-                <div class="rankings-grid">
-                  <!-- Champion Team -->
-                  <div class="ranking-card champion">
-                    <div class="ranking-badge">🥇</div>
-                    <div class="team-content">
-                      <div class="team-logo">
-                        <img
-                          id="championTeamLogo"
-                          src=""
-                          alt="Champion Team"
-                          class="team-logo-img"
-                        />
+              <div class="rest">
+                <div class="two">
+                  <div class="teambox-two">
+                    <div class="box">
+                      <img id="resultsSecondTeamLogo" src="" alt="2nd Team" />
+                    </div>
+                    <div class="boxdetail-two">
+                      <div class="rank">2ND</div>
+                      <div class="rating" id="resultsSecondTeamRating">
+                        RATING: 0
                       </div>
-                      <div class="team-info">
-                        <h4 id="championTeamName" class="team-name">
-                          Team Name
-                        </h4>
-                        <div class="team-stats">
-                          <div class="stat-item">
-                            <span class="stat-label">Owner:</span>
-                            <span id="championTeamOwner" class="stat-value"
-                              >-</span
-                            >
-                          </div>
-                          <div class="stat-item">
-                            <span class="stat-label">Total Rating:</span>
-                            <span id="championTeamRating" class="stat-value"
-                              >-</span
-                            >
-                          </div>
-                          <div class="stat-item">
-                            <span class="stat-label">Remaining Purse:</span>
-                            <span id="championTeamPurse" class="stat-value"
-                              >-</span
-                            >
-                          </div>
-                        </div>
+                      <div class="higestbuy" id="resultsSecondTeamPlayer">
+                        No player
+                      </div>
+                      <div
+                        class="higestbuyprice"
+                        id="resultsSecondTeamPlayerPrice"
+                      >
+                        0.00CR
                       </div>
                     </div>
                   </div>
-
-                  <!-- Runner-up Team -->
-                  <div class="ranking-card runner-up">
-                    <div class="ranking-badge">🥈</div>
-                    <div class="team-content">
-                      <div class="team-logo">
-                        <img
-                          id="runnerUpTeamLogo"
-                          src=""
-                          alt="Runner-up Team"
-                          class="team-logo-img"
-                        />
-                      </div>
-                      <div class="team-info">
-                        <h4 id="runnerUpTeamName" class="team-name">
-                          Team Name
-                        </h4>
-                        <div class="team-stats">
-                          <div class="stat-item">
-                            <span class="stat-label">Owner:</span>
-                            <span id="runnerUpTeamOwner" class="stat-value"
-                              >-</span
-                            >
-                          </div>
-                          <div class="stat-item">
-                            <span class="stat-label">Total Rating:</span>
-                            <span id="runnerUpTeamRating" class="stat-value"
-                              >-</span
-                            >
-                          </div>
-                          <div class="stat-item">
-                            <span class="stat-label">Remaining Purse:</span>
-                            <span id="runnerUpTeamPurse" class="stat-value"
-                              >-</span
-                            >
-                          </div>
-                        </div>
-                      </div>
+                </div>
+                <div class="three">
+                  <div class="teambox-three">
+                    <div class="box">
+                      <img id="resultsThirdTeamLogo" src="" alt="3rd Team" />
                     </div>
-                  </div>
-
-                  <!-- Third Place Team -->
-                  <div class="ranking-card third-place">
-                    <div class="ranking-badge">🥉</div>
-                    <div class="team-content">
-                      <div class="team-logo">
-                        <img
-                          id="thirdPlaceTeamLogo"
-                          src=""
-                          alt="Third Place Team"
-                          class="team-logo-img"
-                        />
+                    <div class="boxdetail-three">
+                      <div class="rank">3RD</div>
+                      <div class="rating" id="resultsThirdTeamRating">
+                        RATING: 0
                       </div>
-                      <div class="team-info">
-                        <h4 id="thirdPlaceTeamName" class="team-name">
-                          Team Name
-                        </h4>
-                        <div class="team-stats">
-                          <div class="stat-item">
-                            <span class="stat-label">Owner:</span>
-                            <span id="thirdPlaceTeamOwner" class="stat-value"
-                              >-</span
-                            >
-                          </div>
-                          <div class="stat-item">
-                            <span class="stat-label">Total Rating:</span>
-                            <span id="thirdPlaceTeamRating" class="stat-value"
-                              >-</span
-                            >
-                          </div>
-                          <div class="stat-item">
-                            <span class="stat-label">Remaining Purse:</span>
-                            <span id="thirdPlaceTeamPurse" class="stat-value"
-                              >-</span
-                            >
-                          </div>
-                        </div>
+                      <div class="higestbuy" id="resultsThirdTeamPlayer">
+                        No player
+                      </div>
+                      <div
+                        class="higestbuyprice"
+                        id="resultsThirdTeamPlayerPrice"
+                      >
+                        0.00CR
                       </div>
                     </div>
                   </div>
@@ -378,27 +301,9 @@
               </div>
             </div>
           </div>
-          <div class="modal-footer results-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-            >
-              Close
-            </button>
-            <button
-              type="button"
-              class="btn btn-primary"
-              onclick="shareResults()"
-            >
-              Share Results
-            </button>
-          </div>
         </div>
       </div>
     </div>
-
-    <!-- summary-->
 
     <footer class="auction-footer">
       <div

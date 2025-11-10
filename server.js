@@ -82,20 +82,27 @@ function generateRoomCode() {
 }
 
 function assignTeamsToUsers(users, roomCode) {
-  const teamAssignments = {};
+  console.log(
+    `🔧 Assigning teams for room ${roomCode} with ${users.length} users`
+  );
 
+  const teamAssignments = {};
   const shuffledTeams = [...ALL_TEAMS];
+
+  // Shuffle teams
   for (let i = shuffledTeams.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffledTeams[i], shuffledTeams[j]] = [shuffledTeams[j], shuffledTeams[i]];
   }
 
   const shuffledUsers = [...users];
+  // Shuffle users
   for (let i = shuffledUsers.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffledUsers[i], shuffledUsers[j]] = [shuffledUsers[j], shuffledUsers[i]];
   }
 
+  // Assign teams
   shuffledUsers.forEach((user, index) => {
     if (index < shuffledTeams.length) {
       teamAssignments[user.name] = shuffledTeams[index];
@@ -106,7 +113,7 @@ function assignTeamsToUsers(users, roomCode) {
     }
   });
 
-  console.log(`Random team assignments for room ${roomCode}:`, teamAssignments);
+  console.log(`✅ Team assignments for room ${roomCode}:`, teamAssignments);
   return teamAssignments;
 }
 
@@ -220,224 +227,355 @@ io.on("connection", (socket) => {
   console.log("✅ New connection:", socket.id);
 
   socket.on("createRoom", (data) => {
-    const { name, budget } = data;
-    const aiPlayers = data.aiPlayers || 0;
-
-    if (!name) {
-      socket.emit("roomError", "Name is required");
-      return;
-    }
-
-    let roomCode;
-    do {
-      roomCode = generateRoomCode();
-    } while (rooms[roomCode]);
-
-    const roomBudget = parseFloat(budget) || 100;
-
-    rooms[roomCode] = {
-      code: roomCode,
-      admin: name,
-      budget: roomBudget,
-      users: [
-        {
-          id: socket.id,
-          name,
-          budget: roomBudget,
-          isAdmin: true,
-          connected: true,
-          lastSeen: Date.now(),
-        },
-      ],
-      createdAt: Date.now(),
-      auctionState: {
-        started: false,
-        currentPlayer: null,
-        currentBid: 0,
-        highestBidder: null,
-        currentCategoryIndex: 0,
-        currentPlayerIndex: 0,
-        isAIBidding: false,
-      },
-      playerTeams: {},
-      teamAssignments: {},
-      teamData: {},
-      aiPlayersCount: aiPlayers,
-      chatMessages: [],
-    };
-
-    if (aiPlayers > 0) {
-      const totalHumanPlayers = rooms[roomCode].users.filter(
-        (u) => !u.isAI
-      ).length;
-      const totalPlayers = totalHumanPlayers + aiPlayers;
+    try {
+      const { name, budget } = data;
+      const aiPlayers = data.aiPlayers || 0;
 
       console.log(
-        `Initializing ${aiPlayers} AI players with ${totalHumanPlayers} human players (total: ${totalPlayers})`
+        `🚀 CREATE_ROOM attempt: ${name}, budget: ${budget}, AI: ${aiPlayers}`
       );
 
-      const aiPlayersList = enhancedAIManager.initializeAIPlayers(
-        aiPlayers,
-        roomBudget,
-        rooms[roomCode].teamAssignments,
-        roomBudget,
-        totalPlayers
+      if (!name) {
+        console.log("❌ CREATE_ROOM failed: Name required");
+        socket.emit("roomError", "Name is required");
+        return;
+      }
+
+      // Clean up old rooms first (30-minute expiry)
+      const now = Date.now();
+      const thirtyMinutes = 30 * 60 * 1000;
+      let cleanedCount = 0;
+
+      for (const [code, room] of Object.entries(rooms)) {
+        if (now - room.createdAt > thirtyMinutes) {
+          console.log(`🧹 Cleaning old room: ${code}`);
+          delete rooms[code];
+          cleanedCount++;
+        }
+      }
+
+      if (cleanedCount > 0) {
+        console.log(`🧹 Cleaned ${cleanedCount} old rooms`);
+      }
+
+      // Generate unique room code
+      let roomCode;
+      let attempts = 0;
+      do {
+        roomCode = generateRoomCode();
+        attempts++;
+        if (attempts > 10) {
+          throw new Error(
+            "Failed to generate unique room code after 10 attempts"
+          );
+        }
+      } while (rooms[roomCode]);
+
+      const roomBudget = parseFloat(budget) || 100;
+
+      // Create room object
+      const roomData = {
+        code: roomCode,
+        admin: name,
+        budget: roomBudget,
+        users: [
+          {
+            id: socket.id,
+            name,
+            budget: roomBudget,
+            isAdmin: true,
+            connected: true,
+            lastSeen: Date.now(),
+          },
+        ],
+        createdAt: Date.now(),
+        auctionState: {
+          started: false,
+          currentPlayer: null,
+          currentBid: 0,
+          highestBidder: null,
+          currentCategoryIndex: 0,
+          currentPlayerIndex: 0,
+          isAIBidding: false,
+        },
+        playerTeams: {},
+        teamAssignments: {},
+        teamData: {},
+        aiPlayersCount: aiPlayers,
+        chatMessages: [],
+      };
+
+      rooms[roomCode] = roomData;
+
+      console.log(
+        `✅ Room ${roomCode} created. Total rooms: ${Object.keys(rooms).length}`
       );
 
-      aiPlayersList.forEach((aiPlayer) => {
-        rooms[roomCode].users.push({
-          id: `ai-${aiPlayer.name}`,
-          name: aiPlayer.name,
+      // Handle AI players
+      if (aiPlayers > 0) {
+        try {
+          const totalHumanPlayers = roomData.users.filter(
+            (u) => !u.isAI
+          ).length;
+          const totalPlayers = totalHumanPlayers + aiPlayers;
+
+          console.log(
+            `🤖 Initializing ${aiPlayers} AI players (human: ${totalHumanPlayers}, total: ${totalPlayers})`
+          );
+
+          const aiPlayersList = enhancedAIManager.initializeAIPlayers(
+            aiPlayers,
+            roomBudget,
+            roomData.teamAssignments,
+            roomBudget,
+            totalPlayers
+          );
+
+          aiPlayersList.forEach((aiPlayer) => {
+            roomData.users.push({
+              id: `ai-${aiPlayer.name}`,
+              name: aiPlayer.name,
+              budget: roomBudget,
+              isAdmin: false,
+              connected: true,
+              lastSeen: Date.now(),
+              isAI: true,
+            });
+          });
+
+          console.log(
+            `✅ Initialized ${aiPlayers} AI players for room ${roomCode}`
+          );
+        } catch (aiError) {
+          console.error("❌ AI initialization failed:", aiError);
+          // Continue without AI players
+        }
+      }
+
+      // Assign teams
+      try {
+        roomData.teamAssignments = assignTeamsToUsers(roomData.users, roomCode);
+
+        Object.values(roomData.teamAssignments).forEach((team) => {
+          roomData.teamData[team] = {
+            players: [],
+            totalSpent: 0,
+            totalRating: 0,
+          };
+        });
+
+        console.log(
+          `🏏 Teams assigned for room ${roomCode}:`,
+          Object.keys(roomData.teamAssignments)
+        );
+      } catch (teamError) {
+        console.error("❌ Team assignment failed:", teamError);
+        // Set default team assignments
+        roomData.teamAssignments = { [name]: "CSK" };
+        roomData.teamData = {
+          CSK: { players: [], totalSpent: 0, totalRating: 0 },
+        };
+      }
+
+      // Join room and confirm
+      socket.join(roomCode);
+      socket.emit("roomCreated", { roomCode, isAdmin: true });
+
+      console.log(
+        `🎉 Room ${roomCode} fully created by ${name}. Budget: ₹${roomBudget}Cr, AI: ${aiPlayers}, Users: ${roomData.users.length}`
+      );
+
+      // Log all current rooms for debugging
+      console.log(
+        `📊 All active rooms: ${Object.keys(rooms).join(", ") || "None"}`
+      );
+    } catch (error) {
+      console.error("❌ CREATE_ROOM error:", error);
+      socket.emit("roomError", "Failed to create room. Please try again.");
+    }
+  });
+  socket.on("joinRoom", (data) => {
+    try {
+      const { name, roomCode } = data;
+      const code = roomCode.toUpperCase().trim();
+
+      console.log(`🚪 JOIN_ROOM attempt: "${name}" to room "${code}"`);
+      console.log(
+        `📋 Available rooms: ${Object.keys(rooms).join(", ") || "None"}`
+      );
+
+      if (!rooms[code]) {
+        console.log(`❌ JOIN_ROOM failed: Room "${code}" not found`);
+        socket.emit("roomError", "Room not found!");
+        return;
+      }
+
+      const room = rooms[code];
+      const roomBudget = room.budget || 100;
+      const totalUsers = room.users.length;
+
+      console.log(
+        `✅ Room "${code}" found. Current users: ${totalUsers}, Budget: ${roomBudget}`
+      );
+
+      // Check if room is full
+      if (totalUsers >= 10) {
+        console.log(
+          `❌ JOIN_ROOM failed: Room "${code}" is full (${totalUsers}/10)`
+        );
+        socket.emit("roomError", "Room is full! Maximum 10 players allowed.");
+        return;
+      }
+
+      // Check if auction has already started
+      if (room.auctionState && room.auctionState.started) {
+        const wasPreviousUser = room.users.some(
+          (u) => u.name.toLowerCase() === name.toLowerCase() && !u.isAI
+        );
+        if (!wasPreviousUser) {
+          console.log(
+            `❌ JOIN_ROOM failed: Auction started, new user "${name}" cannot join`
+          );
+          socket.emit(
+            "roomError",
+            "Auction has already started! New users cannot join."
+          );
+          return;
+        }
+      }
+
+      // Check for existing user (reconnection case)
+      const existingUser = room.users.find(
+        (u) => u.name.toLowerCase() === name.toLowerCase() && !u.isAI
+      );
+
+      if (existingUser) {
+        const existingSocket = io.sockets.sockets.get(existingUser.id);
+        if (existingSocket?.connected) {
+          console.log(
+            `❌ JOIN_ROOM failed: Username "${name}" already taken in room "${code}"`
+          );
+          socket.emit("roomError", "Username already taken in this room!");
+          return;
+        } else {
+          // Reconnect existing user
+          console.log(`🔁 Reconnecting user "${name}" in room "${code}"`);
+          existingUser.id = socket.id;
+          existingUser.connected = true;
+          existingUser.lastSeen = Date.now();
+
+          const userTeam = room.teamAssignments[existingUser.name];
+          if (userTeam && !room.teamData[userTeam]) {
+            room.teamData[userTeam] = {
+              players: [],
+              totalSpent: 0,
+              totalRating: 0,
+            };
+          }
+        }
+      } else {
+        // Add new user
+        console.log(`👤 Adding new user "${name}" to room "${code}"`);
+        const newUser = {
+          id: socket.id,
+          name: name,
           budget: roomBudget,
           isAdmin: false,
           connected: true,
           lastSeen: Date.now(),
-          isAI: true,
+          joinTime: Date.now(),
+          isAI: false,
+        };
+        room.users.push(newUser);
+
+        // Reassign teams for all users
+        console.log(`🔄 Reassigning teams for room "${code}"`);
+        room.teamAssignments = assignTeamsToUsers(room.users, code);
+
+        const assignedTeams = new Set(Object.values(room.teamAssignments));
+
+        // Clean up unused teams
+        Object.keys(room.teamData).forEach((teamName) => {
+          if (!assignedTeams.has(teamName)) {
+            console.log(`🗑️ Removing unused team data: ${teamName}`);
+            delete room.teamData[teamName];
+          }
         });
-      });
 
-      console.log(
-        `Initialized ${aiPlayers} enhanced AI players for room ${roomCode}`
-      );
-    }
+        // Ensure all assigned teams have data
+        assignedTeams.forEach((teamName) => {
+          if (!room.teamData[teamName]) {
+            console.log(`➕ Creating team data for: ${teamName}`);
+            room.teamData[teamName] = {
+              players: [],
+              totalSpent: 0,
+              totalRating: 0,
+            };
+          }
+        });
 
-    rooms[roomCode].teamAssignments = assignTeamsToUsers(
-      rooms[roomCode].users,
-      roomCode
-    );
-
-    Object.values(rooms[roomCode].teamAssignments).forEach((team) => {
-      rooms[roomCode].teamData[team] = {
-        players: [],
-        totalSpent: 0,
-        totalRating: 0,
-      };
-    });
-
-    socket.join(roomCode);
-    socket.emit("roomCreated", { roomCode, isAdmin: true });
-    console.log(
-      `🎯 Room ${roomCode} created by ${name} with budget ${roomBudget} and ${aiPlayers} AI players`
-    );
-  });
-
-  socket.on("joinRoom", (data) => {
-    const { name, roomCode } = data;
-    const code = roomCode.toUpperCase().trim(); // Ensure uppercase and trim
-
-    console.log(`🚪 Join attempt: ${name} to room ${code}`);
-    console.log(`Available rooms: ${Object.keys(rooms).join(", ")}`);
-
-    if (!rooms[code]) {
-      console.log(
-        `❌ Room ${code} not found. Available: ${Object.keys(rooms).join(", ")}`
-      );
-      socket.emit("roomError", "Room not found!");
-      return;
-    }
-
-    const room = rooms[code];
-    const roomBudget = room.budget || 100;
-
-    const totalUsers = room.users.length;
-    if (totalUsers >= 10) {
-      socket.emit("roomError", "Room is full! Maximum 10 players allowed.");
-      return;
-    }
-
-    if (room.auctionState && room.auctionState.started) {
-      const wasPreviousUser = room.users.some(
-        (u) => u.name.toLowerCase() === name.toLowerCase() && !u.isAI
-      );
-      if (!wasPreviousUser) {
-        socket.emit(
-          "roomError",
-          "Auction has already started! New users cannot join."
+        console.log(
+          `🏏 Teams after reassignment: ${Array.from(assignedTeams).join(", ")}`
         );
-        return;
       }
-    }
 
-    const existingUser = room.users.find(
-      (u) => u.name.toLowerCase() === name.toLowerCase() && !u.isAI
-    );
-
-    if (existingUser) {
-      const existingSocket = io.sockets.sockets.get(existingUser.id);
-      if (existingSocket?.connected) {
-        socket.emit("roomError", "Username already taken in this room!");
-        return;
-      } else {
-        existingUser.id = socket.id;
-        existingUser.connected = true;
-        existingUser.lastSeen = Date.now();
-
-        const userTeam = room.teamAssignments[existingUser.name];
-        if (userTeam && !room.teamData[userTeam]) {
-          room.teamData[userTeam] = {
-            players: [],
-            totalSpent: 0,
-            totalRating: 0,
-          };
+      // Set admin status
+      const isAdmin = room.admin === name;
+      if (isAdmin) {
+        const adminUser = room.users.find((u) => u.name === name);
+        if (adminUser) {
+          adminUser.isAdmin = true;
+          console.log(`⭐ User "${name}" is admin of room "${code}"`);
         }
       }
-    } else {
-      const newUser = {
-        id: socket.id,
-        name: name,
+
+      // Join socket room
+      socket.join(code);
+      console.log(`✅ Socket joined room "${code}"`);
+
+      // Send room joined confirmation
+      socket.emit("roomJoined", {
+        roomCode: code,
+        isAdmin: isAdmin,
         budget: roomBudget,
-        isAdmin: false,
-        connected: true,
-        lastSeen: Date.now(),
-        joinTime: Date.now(),
-        isAI: false,
-      };
-      room.users.push(newUser);
-
-      room.teamAssignments = assignTeamsToUsers(room.users, code);
-
-      const assignedTeams = new Set(Object.values(room.teamAssignments));
-
-      Object.keys(room.teamData).forEach((teamName) => {
-        if (!assignedTeams.has(teamName)) {
-          delete room.teamData[teamName];
-        }
+        teamAssignments: room.teamAssignments,
+        teamData: room.teamData,
+        auctionState: room.auctionState,
+        playerTeams: room.playerTeams,
+        users: room.users,
       });
 
-      assignedTeams.forEach((teamName) => {
-        if (!room.teamData[teamName]) {
-          room.teamData[teamName] = {
-            players: [],
-            totalSpent: 0,
-            totalRating: 0,
-          };
-        }
+      console.log(`📤 Sent roomJoined event to "${name}" in room "${code}"`);
+
+      // Notify all users in room
+      io.to(code).emit("userListUpdated", {
+        users: room.users,
+        teamAssignments: room.teamAssignments,
+        teamData: room.teamData,
       });
+
+      console.log(
+        `📢 Notified all users in room "${code}" about user list update`
+      );
+
+      // Final success log
+      console.log(`🎉 JOIN_ROOM successful: "${name}" joined room "${code}"`);
+      console.log(
+        `📊 Room "${code}" now has ${room.users.length} users: ${room.users
+          .map((u) => u.name)
+          .join(", ")}`
+      );
+    } catch (error) {
+      console.error("❌ JOIN_ROOM critical error:", error);
+      console.error("Error details:", {
+        name: data?.name,
+        roomCode: data?.roomCode,
+        errorMessage: error.message,
+        stack: error.stack,
+      });
+
+      socket.emit("roomError", "Failed to join room. Please try again.");
     }
-
-    const isAdmin = room.admin === name;
-    if (isAdmin) {
-      const adminUser = room.users.find((u) => u.name === name);
-      if (adminUser) adminUser.isAdmin = true;
-    }
-
-    socket.join(code);
-    socket.emit("roomJoined", {
-      roomCode: code,
-      isAdmin: isAdmin,
-      budget: roomBudget,
-      teamAssignments: room.teamAssignments,
-      teamData: room.teamData,
-      auctionState: room.auctionState,
-      playerTeams: room.playerTeams,
-      users: room.users,
-    });
-
-    io.to(code).emit("userListUpdated", {
-      users: room.users,
-      teamAssignments: room.teamAssignments,
-      teamData: room.teamData,
-    });
   });
 
   socket.on("joinAuctionRoom", (data) => {

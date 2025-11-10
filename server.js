@@ -1,8 +1,8 @@
 const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
-const fs = require("fs");
 const path = require("path");
+const http = require("http");
+const fs = require("fs");
+const { Server } = require("socket.io");
 
 const PORT = process.env.PORT || 3000;
 
@@ -12,6 +12,7 @@ const io = new Server(server, {
   pingTimeout: 60000,
   pingInterval: 25000,
 });
+
 app.use(express.static(path.join(__dirname, "public")));
 
 const { SmartAIManager } = require("./aiplayer.js");
@@ -19,10 +20,28 @@ const enhancedAIManager = new SmartAIManager();
 
 app.get("/players", (req, res) => {
   const filePath = path.join(__dirname, "data", "players.json");
+
+  // Check if file exists first
+  if (!fs.existsSync(filePath)) {
+    console.error("❌ Players file not found:", filePath);
+    return res.status(500).json({ error: "Players data file not found" });
+  }
+
   fs.readFile(filePath, "utf8", (err, data) => {
-    if (err) return res.status(500).json({ error: "Failed to load players" });
-    const players = JSON.parse(data).players;
-    res.json(players);
+    if (err) {
+      console.error("❌ Error reading players file:", err);
+      return res.status(500).json({ error: "Failed to load players" });
+    }
+
+    try {
+      const playersData = JSON.parse(data);
+      const players = playersData.players || playersData;
+      console.log(`✅ Loaded ${players.length} players`);
+      res.json(players);
+    } catch (parseError) {
+      console.error("❌ Error parsing players JSON:", parseError);
+      res.status(500).json({ error: "Invalid players data format" });
+    }
   });
 });
 
@@ -60,21 +79,18 @@ function generateRoomCode() {
 function assignTeamsToUsers(users, roomCode) {
   const teamAssignments = {};
 
-  // Create a shuffled copy of teams
   const shuffledTeams = [...ALL_TEAMS];
   for (let i = shuffledTeams.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffledTeams[i], shuffledTeams[j]] = [shuffledTeams[j], shuffledTeams[i]];
   }
 
-  // Create a shuffled copy of users
   const shuffledUsers = [...users];
   for (let i = shuffledUsers.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffledUsers[i], shuffledUsers[j]] = [shuffledUsers[j], shuffledUsers[i]];
   }
 
-  // Assign teams to users randomly
   shuffledUsers.forEach((user, index) => {
     if (index < shuffledTeams.length) {
       teamAssignments[user.name] = shuffledTeams[index];
@@ -89,7 +105,6 @@ function assignTeamsToUsers(users, roomCode) {
   return teamAssignments;
 }
 
-// Remove the old AI functions since we're using EnhancedAIManager
 function calculateNextBidAmount(currentBid, basePrice) {
   if (currentBid === 0) return parseFloat(basePrice);
   if (currentBid < 1) return parseFloat((currentBid + 0.05).toFixed(2));
@@ -109,20 +124,18 @@ async function processEnhancedAIFirstBids(roomObj, player) {
 
   console.log(`🤖 Processing AI first bids for ${player.name}`);
 
-  // Create sold players array from roomObj.playerTeams
   const soldPlayers = Object.values(roomObj.playerTeams).map((pt) => ({
     price: pt.price,
-    basePrice: pt.basePrice || 0.2, // default base price if missing
+    basePrice: pt.basePrice || 0.2,
     role: pt.role || "Unknown",
   }));
 
   const aiBids = await enhancedAIManager.processAIBids(
     player,
-    0, // currentBid
-    null, // highestBidder
+    0,
+    null,
     roomObj.teamAssignments,
     {
-      // Pass proper room state
       soldPlayers: soldPlayers,
       teams: roomObj.teamData || {},
     }
@@ -152,10 +165,9 @@ async function processEnhancedAIBids(roomObj, currentBid, currentBidder) {
     return;
   }
 
-  // Create sold players array from roomObj.playerTeams
   const soldPlayers = Object.values(roomObj.playerTeams).map((pt) => ({
     price: pt.price,
-    basePrice: pt.basePrice || 0.2, // default base price if missing
+    basePrice: pt.basePrice || 0.2,
     role: pt.role || "Unknown",
   }));
 
@@ -165,7 +177,6 @@ async function processEnhancedAIBids(roomObj, currentBid, currentBidder) {
     currentBidder,
     roomObj.teamAssignments,
     {
-      // Pass proper room state
       soldPlayers: soldPlayers,
       teams: roomObj.teamData || {},
     }
@@ -185,14 +196,13 @@ async function processEnhancedAIBids(roomObj, currentBid, currentBidder) {
       `🤖 ${highestBid.username} outbid with: ₹${highestBid.bidAmount}Cr`
     );
 
-    // Recursively process more AI bids if needed
     setTimeout(async () => {
       await processEnhancedAIBids(
         roomObj,
         highestBid.bidAmount,
         highestBid.username
       );
-    }, 1000); // Reduced delay for faster bidding
+    }, 1000);
   } else {
     roomObj.auctionState.isAIBidding = false;
     console.log(
@@ -251,9 +261,7 @@ io.on("connection", (socket) => {
       chatMessages: [],
     };
 
-    // Initialize AI players if requested
     if (aiPlayers > 0) {
-      // Calculate total players (human + AI)
       const totalHumanPlayers = rooms[roomCode].users.filter(
         (u) => !u.isAI
       ).length;
@@ -265,13 +273,12 @@ io.on("connection", (socket) => {
 
       const aiPlayersList = enhancedAIManager.initializeAIPlayers(
         aiPlayers,
-        roomBudget, // individual AI budget
-        rooms[roomCode].teamAssignments, // team assignments
-        roomBudget, // room budget
-        totalPlayers // total players count
+        roomBudget,
+        rooms[roomCode].teamAssignments,
+        roomBudget,
+        totalPlayers
       );
 
-      // Add AI players to room users array
       aiPlayersList.forEach((aiPlayer) => {
         rooms[roomCode].users.push({
           id: `ai-${aiPlayer.name}`,
@@ -289,13 +296,11 @@ io.on("connection", (socket) => {
       );
     }
 
-    // Assign teams to all users (including AI players) - THIS MUST COME AFTER AI INIT
     rooms[roomCode].teamAssignments = assignTeamsToUsers(
       rooms[roomCode].users,
       roomCode
     );
 
-    // Initialize team data for all assigned teams
     Object.values(rooms[roomCode].teamAssignments).forEach((team) => {
       rooms[roomCode].teamData[team] = {
         players: [],
@@ -323,7 +328,6 @@ io.on("connection", (socket) => {
     const room = rooms[code];
     const roomBudget = room.budget || 100;
 
-    // Check if room is full (1 admin + 9 players = 10 total)
     const totalUsers = room.users.length;
     if (totalUsers >= 10) {
       socket.emit("roomError", "Room is full! Maximum 10 players allowed.");
@@ -353,7 +357,6 @@ io.on("connection", (socket) => {
         socket.emit("roomError", "Username already taken in this room!");
         return;
       } else {
-        // Reconnecting user
         existingUser.id = socket.id;
         existingUser.connected = true;
         existingUser.lastSeen = Date.now();
@@ -380,10 +383,8 @@ io.on("connection", (socket) => {
       };
       room.users.push(newUser);
 
-      // Reassign teams randomly for ALL users
       room.teamAssignments = assignTeamsToUsers(room.users, code);
 
-      // Clean up team data based on new assignments
       const assignedTeams = new Set(Object.values(room.teamAssignments));
 
       Object.keys(room.teamData).forEach((teamName) => {
@@ -421,7 +422,6 @@ io.on("connection", (socket) => {
       users: room.users,
     });
 
-    // Broadcast updated assignments to all users
     io.to(code).emit("userListUpdated", {
       users: room.users,
       teamAssignments: room.teamAssignments,
@@ -443,7 +443,6 @@ io.on("connection", (socket) => {
         user.isAdmin = roomObj.admin === username;
       }
 
-      // Calculate actual team count (human + AI)
       const teamCount = roomObj.users.filter((user) => user.connected).length;
 
       socket.emit("roomState", {
@@ -452,7 +451,7 @@ io.on("connection", (socket) => {
         teamData: roomObj.teamData,
         auctionState: roomObj.auctionState,
         playerTeams: roomObj.playerTeams,
-        teamCount: teamCount, // Send team count to client
+        teamCount: teamCount,
       });
 
       if (roomObj.auctionState && roomObj.auctionState.started) {
@@ -532,13 +531,11 @@ io.on("connection", (socket) => {
       roomObj.auctionState.currentBid = 0;
       roomObj.auctionState.highestBidder = null;
 
-      // Broadcast to all clients in the room
       io.to(room).emit("playerSelected", player);
       io.to(room).emit("bidUpdate", { amount: 0, bidder: null });
 
       console.log(`📢 Player ${player.name} broadcast to room ${room}`);
 
-      // Trigger AI first bidding after a short delay
       if (roomObj.aiPlayersCount > 0) {
         setTimeout(async () => {
           await processEnhancedAIFirstBids(roomObj, player);
@@ -604,7 +601,6 @@ io.on("connection", (socket) => {
 
     io.to(room).emit("bidUpdate", { amount: bidAmount, bidder: username });
 
-    // Process AI bids after human bid
     if (roomObj.aiPlayersCount > 0 && !roomObj.auctionState.isAIBidding) {
       roomObj.auctionState.isAIBidding = true;
 
@@ -624,7 +620,6 @@ io.on("connection", (socket) => {
     if (user && user.name === roomObj.admin) {
       roomObj.playerTeams[playerId] = { team: team, price: price };
 
-      // Update AI player if they won
       if (roomObj.aiPlayersCount > 0 && roomObj.auctionState.highestBidder) {
         const winningAIName = roomObj.auctionState.highestBidder;
         const aiPlayer = enhancedAIManager.getAIPlayerByName(winningAIName);
@@ -647,7 +642,6 @@ io.on("connection", (socket) => {
         }
       }
 
-      // Update team data
       if (roomObj.teamData[team]) {
         roomObj.teamData[team].players.push({
           playerId: playerId,
@@ -741,10 +735,6 @@ setInterval(() => {
   }
 }, 60000);
 
-/*
-server.listen(3000, "0.0.0.0", () => {
-  console.log("🚀 Server running on http://localhost:3000");
-});*/
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });

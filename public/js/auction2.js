@@ -6,6 +6,33 @@ const backgroundUrls = [
   "/images/playercard bg purple.png",
 ];
 
+// ========== GLOBAL CONSTANTS ==========
+const CATEGORY_ORDER = [
+  "BAT",
+  "BAT WK",
+  "ALL",
+  "FBOWL",
+  "SPIN",
+  "UC-BAT",
+  "UC-ALL",
+  "UC-BOWL",
+  "UC-SPIN",
+];
+
+// Rest of your auction2.js code...
+const ALL_TEAMS = [
+  "CSK",
+  "MI",
+  "RCB",
+  "KKR",
+  "DC",
+  "SRH",
+  "RR",
+  "PK",
+  "GT",
+  "LSG",
+];
+
 document.addEventListener("DOMContentLoaded", async () => {
   const socket = io({
     reconnection: true,
@@ -51,6 +78,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let auctionStarted = false;
   let playerTeams = {};
   let currentCategoryIndex = 0;
+  let userCommentaryEnabled = true;
   let currentPlayerIndex = 0;
   let budget = roomBudget;
   let activeTeams = {};
@@ -144,11 +172,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    // DON'T select players here - wait for team count from server
-    console.log(
-      "⏳ Waiting for team count from server before selecting players..."
-    );
-
     players = sortPlayersByCategoryAndSequence(players);
     console.log("🎯 Players sorted by category and sequence");
   } catch (err) {
@@ -165,22 +188,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       teamCount = Object.keys(data.teamAssignments).length;
       console.log(`🏏 Team count updated to: ${teamCount} teams`);
 
-      // Re-select players based on new team count
       selectedPlayersForAuction = selectPlayersForAuction(players, teamCount);
       console.log(
         `🎯 Selected ${selectedPlayersForAuction.length} players for ${teamCount} teams`
       );
-
-      debugPlayerCounts();
-      const roleCounts = calculateRoleCounts(selectedPlayersForAuction);
-      console.log("🎭 Final Role Distribution:", roleCounts);
 
       updateTeamAssignments(data.users, data.teamAssignments);
       updateTeamBoxesFromActiveTeams();
 
       if (auctionStarted && selectedPlayersForAuction.length > 0) {
         showSelectedPlayersByRole(currentRole);
-        console.log("🔄 Updated player table with new selection");
       }
     }
   });
@@ -197,9 +214,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (selectedPlayersForAuction.length > 0) {
       showSelectedPlayersByRole("BAT");
-      console.log("📊 Showing selected players in table");
     } else {
-      console.log("⏳ Waiting for player selection before showing table...");
       showWaitingForAuctionMessage();
     }
 
@@ -230,7 +245,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     bidButton.disabled = true;
     resetBiddingBox();
 
-    // Show results after a short delay
     setTimeout(() => {
       showAuctionResults();
     }, 2000);
@@ -242,8 +256,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   socket.on("bidUpdate", (bidData) => {
-    if (bidData.amount > currentBid && bidData.bidder !== username) {
-      clickSound.play();
+    if (bidData.bidder !== username) {
+      playBidSound();
     }
     updateBid(bidData);
   });
@@ -277,15 +291,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     socket.emit("endAuction", roomCode);
   });
 
-  const clickSound = new Audio("/music/button-press.wav"); // ✅ remove '/public'
-  clickSound.volume = 0.6;
-
   bidButton.addEventListener("click", handleBidButtonClick);
-
-  bidButton.addEventListener("click", () => {
-    clickSound.currentTime = 0;
-    clickSound.play();
-  });
 
   // ========== PLAYER SELECTION LOGIC ==========
   function calculateRequiredPlayers(teamCount) {
@@ -299,11 +305,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       required[role] = Math.ceil(mandatoryCount * bufferMultiplier);
     });
 
-    const totalPlayers = Object.values(required).reduce(
-      (sum, count) => sum + count,
-      0
-    );
-    return { required, totalPlayers };
+    return { required };
   }
 
   function selectPlayersForAuction(allPlayers, teamCount) {
@@ -416,6 +418,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  function playBidSound() {
+    try {
+      const bidSound = new Audio("/music/button-press.mp3");
+      bidSound.volume = 0.4; // Adjust volume as needed
+      bidSound.play().catch((e) => console.log("Audio play failed:", e));
+    } catch (error) {
+      console.log("Bid sound not available");
+    }
+  }
   // ========== BIDDING HANDLING ==========
   function handleBidButtonClick() {
     if (!currentPlayer || !auctionStarted || highestBidder === username) {
@@ -427,6 +438,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
       return;
     }
+    playBidSound();
 
     const teamName = getUserTeam(username);
     const myTeam = activeTeams[teamName];
@@ -631,18 +643,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     updateTeamBoxesFromActiveTeams();
-    updateAuctionSummary(activeTeams, budget); // Update summary when player is sold
+    updateAuctionSummary(activeTeams, budget);
     resetBiddingBox();
 
-    // Check if auction should end after player is sold
     if (checkAuctionCompletion()) {
-      return; // Don't select next player if auction is ending
+      return;
     }
 
     if (isAdmin && auctionStarted) {
       setTimeout(() => {
         selectNextPlayer();
       }, 2000);
+    }
+
+    if (userCommentaryEnabled) {
+      const bidAmount = parseFloat(soldData.price);
+      const basePrice = parseFloat(soldData.basePrice);
+
+      let eventType = "player_sold";
+      if (bidAmount <= basePrice * 1.1) {
+        eventType = "bargain_buy";
+      } else if (bidAmount > basePrice * 4) {
+        eventType = "expensive_buy";
+      } else if (bidAmount > basePrice * 2) {
+        eventType = "aggressive_bid";
+      }
     }
   }
 
@@ -678,7 +703,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     </style>
 `;
 
-  // Add the styles to the document head
   document.head.insertAdjacentHTML("beforeend", completionStyles);
 
   // ========== SOCKET EVENT FOR REQUESTING AUCTION END ==========
@@ -688,16 +712,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         `All teams have completed 11 players! ${data.username} requested to end the auction.`,
         "info"
       );
-      // Admin can choose to end auction manually or automatically
       if (confirm("All teams have completed 11 players. End auction now?")) {
         socket.emit("endAuction", roomCode);
       }
     }
   });
-
-  // ========== UPDATE TEAM BOXES WITH COMPLETION CHECK ==========
-
-  // ========== HANDLE PLAYER SOLD WITH COMPLETION CHECK ==========
 
   // ========== UPDATE THE ROOM STATE HANDLER ==========
   function handleRoomState(roomState) {
@@ -733,7 +752,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       };
     });
 
-    // Initialize missing teams
     Object.values(userTeamAssignments).forEach((teamName) => {
       if (!activeTeams[teamName]) {
         const owner = Object.keys(userTeamAssignments).find(
@@ -773,9 +791,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     updateTeamBoxesFromActiveTeams();
-    updateAuctionSummary(activeTeams, budget); // Update summary when room state loads
+    updateAuctionSummary(activeTeams, budget);
 
-    // Check if auction should end when room state is loaded
     if (auctionStarted) {
       setTimeout(() => {
         checkAuctionCompletion();
@@ -798,25 +815,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function calculateAndDisplayResults() {
-    // Calculate team rankings based on total rating
     const rankedTeams = Object.values(activeTeams).sort((a, b) => {
       const ratingA = a.totalRating || 0;
       const ratingB = b.totalRating || 0;
       return ratingB - ratingA;
     });
 
-    // Find the most expensive player in the entire auction
     const mostExpensivePlayer = findMostExpensivePlayer();
-
-    // Update highest bid information in results modal
     updateResultsHighestBidInfo(mostExpensivePlayer);
 
-    // Update MVP (highest rated team)
     if (rankedTeams.length > 0) {
       updateResultsMVPInfo(rankedTeams[0]);
     }
 
-    // Update team rankings in results modal
     updateResultsTeamRankings(rankedTeams);
   }
 
@@ -829,9 +840,15 @@ document.addEventListener("DOMContentLoaded", async () => {
         const playerPrice = parseFloat(player.price) || 0;
         if (playerPrice > highestPrice) {
           highestPrice = playerPrice;
+          // Try to find the original player data for image
+          const originalPlayer = players.find(
+            (p) => p.name === player.playerName || p.id === player.playerId
+          );
+
           mostExpensive = {
             ...player,
             team: team.teamName,
+            image: originalPlayer?.image || player.image,
           };
         }
       });
@@ -848,12 +865,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     const highestBidTeam = document.getElementById("resultsHighestBidTeam");
 
     if (highestBidPlayerImg && mostExpensivePlayer) {
-      // Use the player image from your players data
+      // Get the actual player object to access the image
+      const actualPlayer = players.find(
+        (p) =>
+          p.name === mostExpensivePlayer.playerName ||
+          p.id === mostExpensivePlayer.playerId
+      );
+
       const playerImage =
+        actualPlayer?.image ||
         mostExpensivePlayer.image ||
-        `/images/PLAYERS/${mostExpensivePlayer.playerName
-          ?.toLowerCase()
-          .replace(/\s+/g, " ")}.png` ||
         "https://via.placeholder.com/120?text=PLAYER";
 
       highestBidPlayerImg.src = playerImage;
@@ -861,7 +882,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         mostExpensivePlayer.playerName || "Most Expensive Player";
       highestBidPlayerImg.style.display = "block";
 
-      // Add error handling for broken images
       highestBidPlayerImg.onerror = function () {
         this.src = "https://via.placeholder.com/120?text=PLAYER";
         this.alt = "Player Image Not Available";
@@ -870,6 +890,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       highestBidPlayerImg.src =
         "https://via.placeholder.com/120?text=NO+PLAYER";
       highestBidPlayerImg.alt = "No player sold";
+      highestBidPlayerImg.style.display = "block";
     }
 
     if (highestBidPrice) {
@@ -894,17 +915,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function updateResultsTeamRankings(rankedTeams) {
-    // Update first place team
     if (rankedTeams.length > 0) {
       updateResultsTeamCard("First", rankedTeams[0]);
     }
-
-    // Update second place team
     if (rankedTeams.length > 1) {
       updateResultsTeamCard("Second", rankedTeams[1]);
     }
-
-    // Update third place team
     if (rankedTeams.length > 2) {
       updateResultsTeamCard("Third", rankedTeams[2]);
     }
@@ -922,18 +938,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       teamLogo.src = `images/${team.teamName}.png`;
       teamLogo.alt = team.fullName;
     }
-
     if (teamRating) {
       teamRating.textContent = `RATING: ${(team.totalRating || 0).toFixed(0)}`;
     }
 
-    // Find highest priced player for this team
     const highestPricedPlayer = findHighestPricedPlayer(team.players || []);
 
     if (teamPlayer) {
       teamPlayer.textContent = highestPricedPlayer?.playerName || "No player";
     }
-
     if (teamPlayerPrice) {
       teamPlayerPrice.textContent = highestPricedPlayer
         ? `₹${(parseFloat(highestPricedPlayer.price) || 0).toFixed(2)}CR`
@@ -959,7 +972,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Make share function globally available
   window.shareResults = shareResults;
 
   // ========== TIMER FUNCTIONS ==========
@@ -1034,7 +1046,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         !selectedPlayersForAuction ||
         selectedPlayersForAuction.length === 0
       ) {
-        console.log("❌ No selected players available for display");
         return emptyData;
       }
 
@@ -1048,10 +1059,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const targetRoles = roleMappings[role] || [role];
       const filteredPlayers = selectedPlayersForAuction.filter((player) =>
         targetRoles.includes(player.role)
-      );
-
-      console.log(
-        `🔍 Found ${filteredPlayers.length} ${role} players in selected auction pool`
       );
 
       return {
@@ -1190,6 +1197,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     playerCard.style.background = `url("${backgroundUrls[currentBgIndex]}") center/cover no-repeat`;
     currentBgIndex = (currentBgIndex + 1) % backgroundUrls.length;
   }
+
   // ========== AUCTION COMPLETION CHECK ==========
   function checkAuctionCompletion() {
     if (!activeTeams || Object.keys(activeTeams).length === 0) {
@@ -1208,11 +1216,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         } teams have completed 11 players! Ending auction...`
       );
 
-      // End the auction
       if (isAdmin) {
         socket.emit("endAuction", roomCode);
       } else {
-        // Notify admin to end auction
         socket.emit("requestAuctionEnd", roomCode);
       }
 
@@ -1221,6 +1227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     return false;
   }
+
   // ========== TEAM BOXES DISPLAY ==========
   function updateTeamBoxesFromActiveTeams() {
     if (!teamBoxesContainer) return;
@@ -1380,10 +1387,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       teamBoxesContainer.appendChild(rowDiv);
     }
 
-    // Update auction summary when team boxes are updated
     updateAuctionSummary(activeTeams, budget);
 
-    // Check if auction should end after updating team boxes
     setTimeout(() => {
       checkAuctionCompletion();
     }, 100);
@@ -1400,40 +1405,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
     updateTeamBoxesFromActiveTeams();
-    updateAuctionSummary(activeTeams, budget); // Update summary when team data updates
+    updateAuctionSummary(activeTeams, budget);
   }
 
-  // ========== DEBUG AND UTILITY FUNCTIONS ==========
-  function debugPlayerCounts() {
-    console.log("=== 🎯 PLAYER COUNT DEBUG ===");
-    console.log(`Total players loaded: ${players.length}`);
-    console.log(`Selected for auction: ${selectedPlayersForAuction.length}`);
-    console.log(`Current team count: ${teamCount}`);
-
-    const allRoleCounts = calculateRoleCounts(players);
-    const selectedRoleCounts = calculateRoleCounts(selectedPlayersForAuction);
-
-    console.log("Available players by role:", allRoleCounts);
-    console.log("Selected players by role:", selectedRoleCounts);
-
-    const { required } = calculateRequiredPlayers(teamCount);
-    console.log("Expected by role:", required);
-
-    console.log("=== BUFFER CALCULATIONS ===");
-    Object.keys(required).forEach((role) => {
-      const mandatoryPerTeam = MANDATORY_ROLES[role];
-      const mandatoryTotal = mandatoryPerTeam * teamCount;
-      const bufferMultiplier = role === "BAT WK" || role === "ALL" ? 2.0 : 1.5;
-      const expected = Math.ceil(mandatoryTotal * bufferMultiplier);
-      const actual = selectedRoleCounts[role] || 0;
-
-      console.log(
-        `${role}: ${mandatoryTotal} mandatory × ${bufferMultiplier} = ${expected} expected, ${actual} actual`
-      );
-    });
-  }
-
-  // Handle room state updates
   socket.on("roomState", (roomState) => {
     handleRoomState(roomState);
 
@@ -1445,10 +1419,191 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (auctionStarted && selectedPlayersForAuction.length > 0) {
         showSelectedPlayersByRole(currentRole);
-        console.log("🔄 Updated player table from room state");
       } else if (auctionStarted) {
         showWaitingForAuctionMessage();
       }
     }
   });
 });
+
+// ========== GLOBAL UTILITY FUNCTIONS ==========
+function extractSequenceNumber(category) {
+  if (!category) return 999;
+  const match = category.match(/L\d+S(\d+)/);
+  return match ? parseInt(match[1]) : 999;
+}
+
+function sortPlayersByCategoryAndSequence(players) {
+  return players.sort((a, b) => {
+    const categoryA = a.category || "";
+    const categoryB = b.category || "";
+
+    if (categoryA < categoryB) return -1;
+    if (categoryA > categoryB) return 1;
+
+    const seqA = a.sequence || 999;
+    const seqB = b.sequence || 999;
+    return seqA - seqB;
+  });
+}
+
+function calculateRoleCounts(players) {
+  const counts = {};
+  players.forEach((player) => {
+    const role = player.role;
+    counts[role] = (counts[role] || 0) + 1;
+  });
+  return counts;
+}
+
+function calculateNextBid(currentBid, basePrice) {
+  if (currentBid === 0) return parseFloat(basePrice);
+  if (currentBid < 1) return parseFloat((currentBid + 0.05).toFixed(2));
+  if (currentBid < 2) return parseFloat((currentBid + 0.1).toFixed(2));
+  if (currentBid < 5) return parseFloat((currentBid + 0.2).toFixed(2));
+  if (currentBid < 10) return parseFloat((currentBid + 0.5).toFixed(2));
+  return currentBid + 1;
+}
+
+function getTeamFullName(teamCode) {
+  const teamNames = {
+    CSK: "Chennai Super Kings",
+    MI: "Mumbai Indians",
+    RCB: "Royal Challengers Bangalore",
+    KKR: "Kolkata Knight Riders",
+    DC: "Delhi Capitals",
+    SRH: "Sunrisers Hyderabad",
+    RR: "Rajasthan Royals",
+    PK: "Punjab Kings",
+    GT: "Gujarat Titans",
+    LSG: "Lucknow Super Giants",
+  };
+  return teamNames[teamCode] || teamCode;
+}
+
+function findHighestPricedPlayer(players) {
+  if (!players || players.length === 0) return null;
+  return players.reduce((highest, player) => {
+    const playerPrice = parseFloat(player.price) || 0;
+    const highestPrice = parseFloat(highest.price) || 0;
+    return playerPrice > highestPrice ? player : highest;
+  });
+}
+
+function calculateTeamRankings(activeTeams, budget) {
+  const teams = Object.values(activeTeams);
+
+  const ratingRanked = [...teams].sort(
+    (a, b) => (b.totalRating || 0) - (a.totalRating || 0)
+  );
+  const purseRanked = [...teams].sort((a, b) => {
+    const aRemaining = budget - (a.totalSpent || 0);
+    const bRemaining = budget - (b.totalSpent || 0);
+    return bRemaining - aRemaining;
+  });
+
+  return teams.map((team) => {
+    const ratingRank =
+      ratingRanked.findIndex((t) => t.teamName === team.teamName) + 1;
+    const purseRank =
+      purseRanked.findIndex((t) => t.teamName === team.teamName) + 1;
+    return {
+      team: team.teamName,
+      ratingRank,
+      purseRank,
+    };
+  });
+}
+
+function updateAuctionSummary(activeTeams, budget) {
+  console.log("🔄 Updating auction summary...");
+
+  if (Object.keys(activeTeams).length === 0) {
+    console.log("❌ No active teams for summary");
+    return;
+  }
+
+  let highestRatingTeam = null,
+    highestRating = -1;
+  let highestPurseTeam = null,
+    highestPurse = -1;
+
+  Object.values(activeTeams).forEach((team) => {
+    const teamRating = parseFloat(team.totalRating) || 0;
+    const teamSpent = parseFloat(team.totalSpent) || 0;
+    const remainingPurse = budget - teamSpent;
+
+    console.log(
+      `🏏 ${
+        team.teamName
+      }: Rating=${teamRating}, Purse=₹${remainingPurse.toFixed(2)}`
+    );
+
+    if (teamRating > highestRating) {
+      highestRating = teamRating;
+      highestRatingTeam = team.teamName;
+    }
+    if (remainingPurse > highestPurse) {
+      highestPurse = remainingPurse;
+      highestPurseTeam = team.teamName;
+    }
+  });
+
+  const highestRatingTeamElement = document.getElementById("highestRatingTeam");
+  const highestPurseTeamElement = document.getElementById("highestPurseTeam");
+
+  console.log(`🏆 Highest Rating: ${highestRatingTeam} (${highestRating})`);
+  console.log(`💰 Biggest Purse: ${highestPurseTeam} (₹${highestPurse})`);
+
+  if (highestRatingTeamElement) {
+    const span = highestRatingTeamElement.querySelector("span");
+    if (span) {
+      span.textContent = highestRatingTeam
+        ? `${highestRatingTeam} ${highestRating.toFixed(1)}`
+        : "—";
+    }
+  }
+
+  if (highestPurseTeamElement) {
+    const span = highestPurseTeamElement.querySelector("span");
+    if (span) {
+      span.textContent = highestPurseTeam
+        ? `${highestPurseTeam} ₹${highestPurse.toFixed(1)} Cr`
+        : "—";
+    }
+  }
+}
+
+function showModal(message, type = "info") {
+  const modalEl = document.getElementById("alertModal");
+  if (!modalEl) {
+    // Fallback to alert if modal not found
+    alert(`${type.toUpperCase()}: ${message}`);
+    return;
+  }
+
+  const modal = new bootstrap.Modal(modalEl);
+  const modalTitle = document.getElementById("modalTitle");
+  const modalMessage = document.getElementById("modalMessage");
+
+  // Set title based on type
+  if (type === "success") {
+    modalTitle.textContent = "✅ Success";
+  } else if (type === "error") {
+    modalTitle.textContent = "❌ Error";
+  } else if (type === "warning") {
+    modalTitle.textContent = "⚠️ Warning";
+  } else {
+    modalTitle.textContent = "ℹ️ Info";
+  }
+
+  modalMessage.textContent = message;
+  modal.show();
+}
+
+function updateBudgetDisplay(budget) {
+  const budgetDisplay = document.getElementById("budgetDisplay");
+  if (budgetDisplay) {
+    budgetDisplay.textContent = budget.toFixed(0);
+  }
+}

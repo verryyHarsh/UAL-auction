@@ -323,9 +323,15 @@ io.on("connection", (socket) => {
 
   socket.on("joinRoom", (data) => {
     const { name, roomCode } = data;
-    const code = roomCode.toUpperCase().trim();
+    const code = roomCode.toUpperCase().trim(); // Ensure uppercase and trim
+
+    console.log(`🚪 Join attempt: ${name} to room ${code}`);
+    console.log(`Available rooms: ${Object.keys(rooms).join(", ")}`);
 
     if (!rooms[code]) {
+      console.log(
+        `❌ Room ${code} not found. Available: ${Object.keys(rooms).join(", ")}`
+      );
       socket.emit("roomError", "Room not found!");
       return;
     }

@@ -936,6 +936,8 @@ body {
 @media (max-width: 576px) {
   .player-card {
     height: 140px;
+    min-width: 280px;
+    max-width: 280px;
     padding: 15px;
   }
 
@@ -1509,33 +1511,40 @@ body:-ms-fullscreen {
   }
 }
 
-/* ===== NEW RESULTS MODAL STYLES ===== */
+/* ===== CLEAN RESULTS MODAL ===== */
 #resultsModal .modal-dialog {
-  max-width: 800px;
-  margin: 20px auto;
+  max-width: 60%;
+  width: 60%;
+  height: 90vh;
+  margin: 5vh auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 #resultsModal .modal-content {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  width: 100%;
+  height: 100%;
 }
 
 #resultsModal .container1 {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   overflow: hidden;
   position: relative;
-  padding: 20px;
-  height: 600px; /* Fixed height */
+  padding: 25px;
   width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Close button styling */
 #resultsModal .close-btn {
   position: absolute;
   top: 15px;
@@ -1543,13 +1552,13 @@ body:-ms-fullscreen {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   border-radius: 50%;
-  width: 35px;
-  height: 35px;
+  width: 40px;
+  height: 40px;
   display: flex;
   justify-content: center;
   align-items: center;
   color: white;
-  font-size: 20px;
+  font-size: 24px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1561,144 +1570,112 @@ body:-ms-fullscreen {
   transform: scale(1.1);
 }
 
-/* Head section - Increased height */
+/* Head Section - Compact Layout */
 #resultsModal .head {
-  height: 200px; /* Increased height */
+  height: 35%;
   display: flex;
-  justify-content: center;
-  gap: 20px;
+  justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
+  gap: 20px;
 }
 
 #resultsModal .highest,
 #resultsModal .mvp {
-  height: 180px; /* Increased height */
-  width: 45%;
-  border-radius: 12px;
-  overflow: hidden;
-  transition: all 0.3s ease;
-  display: flex;
-}
-
-#resultsModal .highest {
-  background-image: url("/images/playercard bg orange.png");
-  background-position: center;
-  background-size: cover;
-}
-
-#resultsModal .mvp {
-  background-image: url("/images/playercard bg purple.png");
-  background-position: center;
-  background-size: cover;
-}
-
-#resultsModal .highest:hover,
-#resultsModal .mvp:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-}
-
-/* Player image styling - Fixed visibility */
-#resultsModal .playerimg {
   height: 100%;
-  width: 40%;
+  width: 48%;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  gap: 15px;
+}
+
+/* Highest Bid Section - Background Image & No Border */
+#resultsModal .highest {
+  background: url("/images/playercard bg orange.png") center/cover no-repeat;
+  border: none;
+}
+
+#resultsModal .playerimg {
+  flex: 0 0 120px;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px;
 }
 
 #resultsModal .playerimg img {
   height: 120px;
   width: 120px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 12px;
+  /* Remove border */
   border: none;
-
-  display: block; /* Ensure image is visible */
 }
 
-/* Detail sections */
 #resultsModal .detail {
-  width: 60%;
-  height: 100%;
-  padding: 15px;
+  flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  padding-left: 10px;
 }
 
-#resultsModal .price,
+#resultsModal .price {
+  font-size: 28px;
+  font-weight: 800;
+  color: #ffeb3b;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
 #resultsModal .teamname {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  width: 100%;
-  font-family: sans-serif;
+  font-size: 18px;
   font-weight: 600;
   color: white;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
 }
 
-#resultsModal .price {
-  font-size: 28px;
-  align-items: flex-end;
-  height: 60%;
-}
-
-#resultsModal .teamname {
-  align-items: flex-start;
-  height: 40%;
-  font-size: 18px;
-}
-
-/* MVP section */
-#resultsModal .mpvteamimg {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  width: 60%;
-  padding: 10px;
-}
-
-#resultsModal .mpvteamimg img {
-  height: 100px;
-  width: 100px;
-  object-fit: contain;
-  transition: all 0.4s ease;
-  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
-}
-
-#resultsModal .mpvteamimg img:hover {
-  transform: scale(1.1);
+/* MVP Section - Background Image & Bigger Logo */
+#resultsModal .mvp {
+  background: url("/images/playercard bg purple.png") center/cover no-repeat;
+  border: none;
+  justify-content: space-between;
 }
 
 #resultsModal .mvpdetail {
-  height: 100%;
-  width: 40%;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding-right: 20px;
-  font-family: sans-serif;
   font-size: 32px;
-  font-weight: 700;
-  color: white;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+  font-weight: 800;
+  color: #ffeb3b;
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+  padding-left: 15px;
 }
 
-/* Standing section */
+#resultsModal .mpvteamimg {
+  flex: 0 0 140px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#resultsModal .mpvteamimg img {
+  height: 140px;
+  width: 140px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 15px rgba(0, 0, 0, 0.4));
+}
+
+/* Standing Section - New Layout */
 #resultsModal .standing {
-  height: 350px; /* Adjusted height */
-  width: 100%;
+  height: 65%;
   display: flex;
   flex-direction: column;
 }
 
 #resultsModal .one {
   height: 45%;
+  width: 100%; /* Full width for the first place */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1706,187 +1683,331 @@ body:-ms-fullscreen {
 }
 
 #resultsModal .rest {
+  height: 55%;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  height: 55%;
-  width: 100%;
-  padding: 0 10px;
+  align-items: stretch;
+  gap: 15px;
 }
 
 #resultsModal .two,
 #resultsModal .three {
-  height: 100%;
-  width: 48%;
+  width: 48%; /* Each takes about half of the remaining space */
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-/* Team boxes - Keep your original glass effect */
-#resultsModal .teambox-one,
-#resultsModal .teambox-two,
-#resultsModal .teambox-three {
-  display: flex;
-  height: 90%;
-  width: 95%;
-  justify-content: center;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 12px;
-  padding: 15px;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-}
-
+/* Team Boxes with Medal Effects */
 #resultsModal .teambox-one {
-  gap: 10px;
-}
-
-#resultsModal .teambox-two,
-#resultsModal .teambox-three {
+  display: flex;
+  height: 95%;
+  width: 40%; /* 1st place takes 40% width */
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 215, 0, 0.3),
+    /* Gold */ rgba(255, 193, 7, 0.4),
+    /* Amber */ rgba(255, 152, 0, 0.3) /* Orange */
+  );
+  border-radius: 16px;
+  padding: 15px;
+  border: 2px solid rgba(255, 215, 0, 0.6); /* Gold border */
   gap: 15px;
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
 }
 
-#resultsModal .teambox-one:hover,
-#resultsModal .teambox-two:hover,
-#resultsModal .teambox-three:hover {
-  transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-}
-
-/* Box details */
-#resultsModal .boxdetail-one,
-#resultsModal .boxdetail-two,
-#resultsModal .boxdetail-three {
-  height: 100%;
+#resultsModal .teambox-two {
+  display: flex;
+  height: 95%;
   width: 100%;
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    rgba(192, 192, 192, 0.3),
+    /* Silver */ rgba(224, 224, 224, 0.4),
+    /* Light Silver */ rgba(158, 158, 158, 0.3) /* Gray */
+  );
+  border-radius: 16px;
+  padding: 15px;
+  border: 2px solid rgba(192, 192, 192, 0.6); /* Silver border */
+  gap: 15px;
+  box-shadow: 0 8px 25px rgba(192, 192, 192, 0.3);
+}
+
+#resultsModal .teambox-three {
+  display: flex;
+  height: 95%;
+  width: 100%;
+  align-items: center;
+  background: linear-gradient(
+    135deg,
+    rgba(205, 127, 50, 0.3),
+    /* Bronze */ rgba(210, 180, 140, 0.4),
+    /* Tan */ rgba(160, 120, 80, 0.3) /* Dark Bronze */
+  );
+  border-radius: 16px;
+  padding: 15px;
+  border: 2px solid rgba(205, 127, 50, 0.6); /* Bronze border */
+  gap: 15px;
+  box-shadow: 0 8px 25px rgba(205, 127, 50, 0.3);
+}
+
+/* Bigger Logos in Team Boxes */
+#resultsModal .box {
+  flex: 0 0 80px;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
-}
-
-#resultsModal .boxdetail-one {
-  padding-left: 5px;
-}
-
-#resultsModal .boxdetail-two,
-#resultsModal .boxdetail-three {
-  padding-left: 10px;
-}
-
-#resultsModal .box {
-  width: 40%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
 }
 
 #resultsModal .box img {
   height: 80px;
   width: 80px;
   object-fit: contain;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-  transition: all 0.3s ease;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
 }
 
-#resultsModal .teambox-one:hover .box img,
-#resultsModal .teambox-two:hover .box img,
-#resultsModal .teambox-three:hover .box img {
-  transform: scale(1.08);
-}
-
-/* Rank and text styling */
-#resultsModal .rank {
-  height: 40%;
-  width: 100%;
-  font-size: 24px;
-  font-family: sans-serif;
-  color: white;
-  font-weight: 700;
+/* Team Details - Closer to Images */
+#resultsModal .boxdetail-one,
+#resultsModal .boxdetail-two,
+#resultsModal .boxdetail-three {
+  flex: 1;
   display: flex;
+  flex-direction: column;
   justify-content: center;
-  align-items: center;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5);
+  padding-left: 5px;
 }
 
-#resultsModal .rating,
-#resultsModal .higestbuy,
-#resultsModal .higestbuyprice {
+#resultsModal .rank {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+/* Different colors for each rank */
+#resultsModal .teambox-one .rank {
+  color: #ffd700; /* Gold */
+}
+
+#resultsModal .teambox-two .rank {
+  color: #c0c0c0; /* Silver */
+}
+
+#resultsModal .teambox-three .rank {
+  color: #cd7f32; /* Bronze */
+}
+
+#resultsModal .rating {
   font-size: 14px;
-  font-family: sans-serif;
-  color: white;
   font-weight: 600;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
-  width: 100%;
-  text-align: center;
-  margin: 3px 0;
+  color: white;
+  margin-bottom: 5px;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+#resultsModal .higestbuy {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 3px;
 }
 
 #resultsModal .higestbuyprice {
   font-size: 16px;
   font-weight: 700;
-  color: #ffcc00;
+  color: #4caf50;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Responsive design */
+/* ===== MOBILE RESPONSIVE ===== */
 @media (max-width: 768px) {
   #resultsModal .modal-dialog {
-    max-width: 95%;
+    max-width: 90%;
+    width: 90%;
+    height: 90vh;
+    margin: 5vh auto;
   }
 
   #resultsModal .container1 {
-    height: 500px;
-    padding: 15px;
+    padding: 20px;
   }
 
   #resultsModal .head {
-    height: 150px;
+    height: 30%;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 15px;
   }
 
   #resultsModal .highest,
   #resultsModal .mvp {
-    height: 140px;
+    width: 100%;
+    height: 48%;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  #resultsModal .playerimg img {
+    height: 80px;
+    width: 80px;
+  }
+
+  #resultsModal .price {
+    font-size: 22px;
+  }
+
+  #resultsModal .teamname {
+    font-size: 16px;
+  }
+
+  #resultsModal .mvpdetail {
+    font-size: 26px;
+  }
+
+  #resultsModal .mpvteamimg img {
+    height: 100px;
+    width: 100px;
   }
 
   #resultsModal .standing {
-    height: 300px;
-  }
-}
-
-@media (max-width: 576px) {
-  #resultsModal .container1 {
-    height: 450px;
-  }
-
-  #resultsModal .head {
-    flex-direction: column;
-    height: 200px;
-    gap: 10px;
-  }
-
-  #resultsModal .highest,
-  #resultsModal .mvp {
-    width: 90%;
-    height: 90px;
+    height: 70%;
   }
 
   #resultsModal .one {
     height: 40%;
+    width: 100%;
+    margin-bottom: 10px;
   }
 
   #resultsModal .rest {
     height: 60%;
     flex-direction: column;
+    gap: 10px;
   }
 
   #resultsModal .two,
   #resultsModal .three {
     width: 100%;
-    height: 48%;
+  }
+
+  #resultsModal .teambox-one,
+  #resultsModal .teambox-two,
+  #resultsModal .teambox-three {
+    width: 100%;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  #resultsModal .box img {
+    height: 60px;
+    width: 60px;
+  }
+
+  #resultsModal .rank {
+    font-size: 20px;
+  }
+
+  #resultsModal .rating {
+    font-size: 13px;
+  }
+
+  #resultsModal .higestbuy {
+    font-size: 12px;
+  }
+
+  #resultsModal .higestbuyprice {
+    font-size: 14px;
+  }
+}
+
+/* Small Mobile Devices */
+@media (max-width: 576px) {
+  #resultsModal .modal-dialog {
+    max-width: 95%;
+    width: 95%;
+    height: 95vh;
+    margin: 2.5vh auto;
+  }
+
+  #resultsModal .container1 {
+    padding: 15px;
+    border-radius: 15px;
+  }
+
+  #resultsModal .close-btn {
+    top: 10px;
+    right: 15px;
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+  }
+
+  #resultsModal .head {
+    height: 35%;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  #resultsModal .highest,
+  #resultsModal .mvp {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  #resultsModal .playerimg img {
+    height: 70px;
+    width: 70px;
+  }
+
+  #resultsModal .price {
+    font-size: 20px;
+  }
+
+  #resultsModal .teamname {
+    font-size: 14px;
+  }
+
+  #resultsModal .mvpdetail {
+    font-size: 24px;
+    padding-left: 10px;
+  }
+
+  #resultsModal .mpvteamimg img {
+    height: 80px;
+    width: 80px;
+  }
+
+  #resultsModal .standing {
+    height: 65%;
+  }
+
+  #resultsModal .box img {
+    height: 50px;
+    width: 50px;
+  }
+
+  #resultsModal .rank {
+    font-size: 18px;
+  }
+}
+
+/* Landscape Mobile Support */
+@media (max-height: 600px) and (orientation: landscape) {
+  #resultsModal .modal-dialog {
+    height: 98vh;
+    margin: 1vh auto;
+  }
+
+  #resultsModal .container1 {
+    padding: 15px;
+  }
+
+  #resultsModal .head {
+    height: 40%;
+  }
+
+  #resultsModal .standing {
+    height: 60%;
   }
 }

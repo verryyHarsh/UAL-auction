@@ -1,40 +1,29 @@
-const ALL_TEAMS = [
-  "CSK",
-  "MI",
-  "RCB",
-  "KKR",
-  "DC",
-  "SRH",
-  "RR",
-  "PK",
-  "GT",
-  "LSG",
-];
+// Remove these duplicate declarations from auction1.js
+// const ALL_TEAMS = [
+//   "CSK",
+//   "MI",
+//   "RCB",
+//   "KKR",
+//   "DC",
+//   "SRH",
+//   "RR",
+//   "PK",
+//   "GT",
+//   "LSG",
+// ];
 
-const TEAM_FULL_NAMES = {
-  CSK: "Chennai Super Kings",
-  MI: "Mumbai Indians",
-  RCB: "Royal Challengers Bangalore",
-  KKR: "Kolkata Knight Riders",
-  DC: "Delhi Capitals",
-  SRH: "Sunrisers Hyderabad",
-  RR: "Rajasthan Royals",
-  PK: "Punjab Kings",
-  GT: "Gujarat Titans",
-  LSG: "Lucknow Super Giants",
-};
-
-const CATEGORY_ORDER = [
-  "BAT",
-  "BAT WK",
-  "ALL",
-  "FBOWL",
-  "SPIN",
-  "UC-BAT",
-  "UC-ALL",
-  "UC-BOWL",
-  "UC-SPIN",
-];
+// const TEAM_FULL_NAMES = {
+//   CSK: "Chennai Super Kings",
+//   MI: "Mumbai Indians",
+//   RCB: "Royal Challengers Bangalore",
+//   KKR: "Kolkata Knight Riders",
+//   DC: "Delhi Capitals",
+//   SRH: "Sunrisers Hyderabad",
+//   RR: "Rajasthan Royals",
+//   PK: "Punjab Kings",
+//   GT: "Gujarat Titans",
+//   LSG: "Lucknow Super Giants",
+// };
 
 function extractSequenceNumber(category) {
   if (!category) return 999;
@@ -84,6 +73,19 @@ function calculateRoleCounts(players) {
 }
 
 function getTeamFullName(shortName) {
+  // This function will now use the TEAM_FULL_NAMES from auction2.js
+  const TEAM_FULL_NAMES = {
+    CSK: "Chennai Super Kings",
+    MI: "Mumbai Indians",
+    RCB: "Royal Challengers Bangalore",
+    KKR: "Kolkata Knight Riders",
+    DC: "Delhi Capitals",
+    SRH: "Sunrisers Hyderabad",
+    RR: "Rajasthan Royals",
+    PK: "Punjab Kings",
+    GT: "Gujarat Titans",
+    LSG: "Lucknow Super Giants",
+  };
   return TEAM_FULL_NAMES[shortName] || shortName;
 }
 
@@ -113,18 +115,30 @@ function updateBudgetDisplay(budget) {
   if (budgetDisplay) budgetDisplay.textContent = budget.toFixed(0);
 }
 
+// ===== UPDATED SUMMARY FUNCTIONS =====
 function updateAuctionSummary(activeTeams, budget) {
-  if (Object.keys(activeTeams).length === 0) return;
+  if (Object.keys(activeTeams).length === 0) {
+    console.log("❌ No active teams for summary");
+    return;
+  }
 
   let highestRatingTeam = null,
     highestRating = -1;
   let highestPurseTeam = null,
     highestPurse = -1;
 
+  console.log("🔄 Calculating auction summary:");
+
   Object.values(activeTeams).forEach((team) => {
-    const teamRating = team.totalRating || 0;
-    const teamSpent = team.totalSpent || 0;
+    const teamRating = parseFloat(team.totalRating) || 0;
+    const teamSpent = parseFloat(team.totalSpent) || 0;
     const remainingPurse = budget - teamSpent;
+
+    console.log(
+      `🏏 ${
+        team.teamName
+      }: Rating=${teamRating}, Purse=₹${remainingPurse.toFixed(2)}`
+    );
 
     if (teamRating > highestRating) {
       highestRating = teamRating;
@@ -139,17 +153,131 @@ function updateAuctionSummary(activeTeams, budget) {
   const highestRatingTeamElement = document.getElementById("highestRatingTeam");
   const highestPurseTeamElement = document.getElementById("highestPurseTeam");
 
-  if (highestRatingTeamElement) {
+  console.log(`🏆 Highest Rating: ${highestRatingTeam} (${highestRating})`);
+  console.log(`💰 Biggest Purse: ${highestPurseTeam} (₹${highestPurse})`);
+
+  if (
+    highestRatingTeamElement &&
+    highestRatingTeamElement.querySelector("span")
+  ) {
     highestRatingTeamElement.querySelector("span").textContent =
       highestRatingTeam
         ? `${highestRatingTeam} ${highestRating.toFixed(1)}`
         : "—";
+  } else {
+    console.log("❌ highestRatingTeamElement not found");
   }
-  if (highestPurseTeamElement) {
+
+  if (
+    highestPurseTeamElement &&
+    highestPurseTeamElement.querySelector("span")
+  ) {
     highestPurseTeamElement.querySelector("span").textContent = highestPurseTeam
       ? `${highestPurseTeam} ₹${highestPurse.toFixed(1)} Cr`
       : "—";
+  } else {
+    console.log("❌ highestPurseTeamElement not found");
   }
+}
+
+function updateHighestBidInfo(
+  currentPlayer,
+  currentBid,
+  highestBidder,
+  userTeamAssignments
+) {
+  const highestBidPlayerImg = document.getElementById("highestBidPlayerImg");
+  const highestBidPrice = document.getElementById("highestBidPrice");
+  const highestBidTeam = document.getElementById("highestBidTeam");
+
+  // Helper function to get user team
+  const getUserTeam = (username) => {
+    return userTeamAssignments[username] || "TBD";
+  };
+
+  if (highestBidPlayerImg) {
+    if (currentPlayer?.image) {
+      highestBidPlayerImg.src = currentPlayer.image;
+      highestBidPlayerImg.alt = currentPlayer.name || "Current Player";
+      highestBidPlayerImg.style.display = "block";
+    } else {
+      highestBidPlayerImg.style.display = "none";
+    }
+  }
+
+  if (highestBidPrice) {
+    highestBidPrice.textContent = `₹${currentBid?.toFixed(2) || "0.00"}CR`;
+  }
+
+  if (highestBidTeam) {
+    highestBidTeam.textContent = highestBidder
+      ? `sold to ${getUserTeam(highestBidder)}`
+      : "No bids yet";
+  }
+}
+
+function updateMVPInfo(team) {
+  const mvpTeamLogo = document.getElementById("mvpTeamLogo");
+  if (mvpTeamLogo && team) {
+    mvpTeamLogo.src = `images/${team.teamName}.png`;
+    mvpTeamLogo.alt = team.fullName;
+  }
+}
+
+function updateTeamRankings(rankedTeams) {
+  // Update first place team
+  if (rankedTeams.length > 0) {
+    updateTeamCard("first", rankedTeams[0]);
+  }
+
+  // Update second place team
+  if (rankedTeams.length > 1) {
+    updateTeamCard("second", rankedTeams[1]);
+  }
+
+  // Update third place team
+  if (rankedTeams.length > 2) {
+    updateTeamCard("third", rankedTeams[2]);
+  }
+}
+
+function updateTeamCard(position, team) {
+  const teamLogo = document.getElementById(`${position}TeamLogo`);
+  const teamRating = document.getElementById(`${position}TeamRating`);
+  const teamPlayer = document.getElementById(`${position}TeamPlayer`);
+  const teamPlayerPrice = document.getElementById(`${position}TeamPlayerPrice`);
+
+  if (teamLogo) {
+    teamLogo.src = `images/${team.teamName}.png`;
+    teamLogo.alt = team.fullName;
+  }
+
+  if (teamRating) {
+    teamRating.textContent = `RATING: ${(team.totalRating || 0).toFixed(0)}`;
+  }
+
+  // Find highest priced player for this team
+  const highestPricedPlayer = findHighestPricedPlayer(team.players || []);
+
+  if (teamPlayer) {
+    teamPlayer.textContent = highestPricedPlayer?.playerName || "No player";
+  }
+
+  if (teamPlayerPrice) {
+    teamPlayerPrice.textContent = highestPricedPlayer
+      ? `₹${(parseFloat(highestPricedPlayer.price) || 0).toFixed(2)}CR`
+      : "0.00CR";
+  }
+}
+
+function findHighestPricedPlayer(players) {
+  if (!players || players.length === 0) return null;
+
+  return players.reduce((highest, player) => {
+    const currentPrice = parseFloat(player.price) || 0;
+    const highestPrice = parseFloat(highest.price) || 0;
+    return currentPrice > highestPrice ? player : highest;
+  }, players[0]);
 }
 
 function updateTimerDisplay(timeLeft) {
@@ -245,8 +373,22 @@ function showModal(message, type = "info", title = "Notice") {
   modal.show();
 }
 
+// Add close button functionality for summary
+function initializeSummaryCloseButton() {
+  const closeBtn = document.querySelector(".close-btn");
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function () {
+      const container = document.querySelector(".container1");
+      if (container) {
+        container.style.display = "none";
+      }
+    });
+  }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
   initializeFullscreen();
+  initializeSummaryCloseButton();
 });
 
 // Make functions globally available
@@ -259,4 +401,5 @@ if (typeof window !== "undefined") {
   window.updateBudgetDisplay = updateBudgetDisplay;
   window.updateAuctionSummary = updateAuctionSummary;
   window.showModal = showModal;
+  window.initializeSummaryCloseButton = initializeSummaryCloseButton;
 }

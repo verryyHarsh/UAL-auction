@@ -709,11 +709,35 @@ body {
   margin-bottom: 3px;
 }
 
+/* UPDATED: Role summary line with color coding */
 .role-summary-line {
   font-size: 0.75rem;
   color: #aaa;
   margin-bottom: 5px;
   line-height: 1.2;
+}
+
+.role-summary-line .role-count {
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin: 0 1px;
+}
+
+.role-summary-line .role-count.mandatory-incomplete {
+  color: #ff4444; /* Red for incomplete mandatory */
+}
+
+.role-summary-line .role-count.mandatory-complete {
+  color: #28a745; /* Green for complete mandatory */
+}
+
+.role-summary-line .role-count.extra {
+  color: #ff9800; /* Orange for extra players */
+}
+
+.role-summary-line .role-count.eliminated {
+  color: #dc3545; /* Dark red for eliminated */
 }
 
 .ranking {
@@ -2009,5 +2033,307 @@ body:-ms-fullscreen {
 
   #resultsModal .standing {
     height: 60%;
+  }
+}
+
+/* ===== TEAM ELIMINATION STYLING ===== */
+.team-eliminated {
+  border: 2px solid #dc3545 !important;
+  background: rgba(220, 53, 69, 0.1) !important;
+  position: relative;
+  opacity: 0.7;
+}
+
+.team-eliminated::after {
+  content: "ELIMINATED";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-45deg);
+  background: #dc3545;
+  color: white;
+  padding: 8px 20px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 5px;
+  z-index: 10;
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.5);
+}
+
+.elimination-badge {
+  background: #dc3545;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  margin-top: 4px;
+  display: inline-block;
+}
+/* Role summary line with color coding */
+.role-summary-line {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-bottom: 5px;
+  line-height: 1.2;
+}
+
+/* Role count color styling */
+.role-summary-line .role-count {
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin: 0 1px;
+}
+
+.role-summary-line .role-count.mandatory-incomplete {
+  color: #ff4444; /* Red for incomplete mandatory */
+}
+
+.role-summary-line .role-count.mandatory-complete {
+  color: #28a745; /* Green for complete mandatory */
+}
+
+.role-summary-line .role-count.extra {
+  color: #ff9800; /* Orange for extra players */
+}
+
+.role-summary-line .role-count.eliminated {
+  color: #dc3545; /* Dark red for eliminated */
+}
+
+/* Music button styling */
+.music-btn {
+  background: linear-gradient(135deg, #9c27b0, #673ab7);
+  border: none;
+  border-radius: 50px;
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 8px rgba(156, 39, 176, 0.3);
+  min-width: 80px;
+}
+
+.music-btn i {
+  margin-right: 8px;
+  font-size: 18px;
+}
+
+.music-btn .btn-status {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.music-btn:hover {
+  transform: scale(1.05);
+}
+
+.music-btn.active {
+  background: linear-gradient(135deg, #673ab7, #9c27b0);
+  box-shadow: 0 3px 12px rgba(156, 39, 176, 0.5);
+}
+
+/* Audio element hidden but accessible */
+#backgroundMusic {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+}
+
+/* Fix for team detail text cutting */
+.teamdetail {
+  flex: 1;
+  min-width: 0; /* This is important for text truncation */
+  overflow: hidden; /* Prevent overflow */
+}
+
+.team-fullname {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: white;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Add ... if text is too long */
+}
+
+.team-owner {
+  font-size: 0.75rem;
+  color: #aaa !important;
+  display: block;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Fix role summary line text wrapping */
+.role-summary-line {
+  font-size: 0.7rem; /* Slightly smaller font */
+  color: #aaa;
+  margin-bottom: 5px;
+  line-height: 1.2;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  max-height: 2.4em; /* 2 lines * 1.2 line-height */
+}
+
+/* Make team boxes a bit taller to accommodate content */
+.team-box {
+  min-height: 320px; /* Increased minimum height */
+}
+
+/* Reduce padding on smaller screens */
+@media (max-width: 768px) {
+  .teamdetail {
+    padding-right: 5px;
+  }
+
+  .team-fullname {
+    font-size: 1rem;
+  }
+
+  .role-summary-line {
+    font-size: 0.65rem;
+  }
+}
+
+/* For very small screens */
+@media (max-width: 576px) {
+  .teamone {
+    gap: 8px; /* Reduce gap between logo and details */
+  }
+
+  .teamlogo img {
+    width: 40px;
+    height: 40px; /* Smaller logo */
+  }
+
+  .teamdetail {
+    min-width: 0;
+  }
+}
+/* Fix role summary line to prevent text cutting */
+.role-summary-line {
+  font-size: 0.7rem;
+  color: #aaa;
+  margin-bottom: 5px;
+  line-height: 1.2;
+  overflow: visible; /* Change from hidden to visible */
+  display: block; /* Change from -webkit-box to block */
+  max-height: none; /* Remove max height restriction */
+  min-height: 2.4em; /* Use min-height instead of max-height */
+  white-space: normal; /* Ensure normal text wrapping */
+}
+
+/* Make sure eliminated text is fully visible */
+.role-summary-line .role-count.eliminated {
+  color: #dc3545;
+
+  display: inline-block; /* Ensure it takes proper space */
+}
+/* Increase team box height to accommodate more text */
+.team-box {
+  min-height: 340px; /* Increased from 320px */
+} /* Increase team box height to accommodate more text */
+.team-box {
+  min-height: 340px; /* Increased from 320px */
+}
+@media (max-width: 768px) {
+  .role-summary-line {
+    font-size: 0.65rem;
+    min-height: 2.6em; /* Slightly more space on mobile */
+  }
+
+  .team-box {
+    min-height: 360px; /* More space on mobile */
+  }
+}
+
+/* Fix role summary line to prevent text cutting and remove line-through */
+.role-summary-line {
+  font-size: 0.7rem;
+  color: #aaa;
+  margin-bottom: 5px;
+  line-height: 1.2;
+  overflow: visible;
+  display: block;
+  max-height: none;
+  min-height: 2.4em;
+  white-space: normal;
+}
+
+/* Update eliminated styling to remove line-through */
+.role-summary-line .role-count.eliminated {
+  color: #dc3545; /* Dark red for eliminated */
+
+  /* Remove this line: text-decoration: line-through; */
+  display: inline-block;
+  font-weight: bold; /* Make it stand out instead of line-through */
+}
+.role-summary-line .role-count.eliminated {
+  color: #dc3545;
+
+  display: inline-block;
+  font-weight: bold; /* Alternative visual indicator */
+  padding: 2px 6px; /* Slightly more padding */
+  border-radius: 4px;
+}
+.role-summary-line .role-count.eliminated {
+  color: #dc3545;
+
+  display: inline-block;
+}
+
+/* Role summary line with color coding */
+.role-summary-line {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin-bottom: 5px;
+  line-height: 1.2;
+  overflow: visible;
+  display: block;
+  max-height: none;
+  min-height: 2.4em;
+  white-space: normal;
+}
+
+.role-summary-line .role-count {
+  font-weight: 600;
+  padding: 1px 4px;
+  border-radius: 3px;
+  margin: 0 1px;
+  display: inline-block;
+}
+
+.role-summary-line .role-count.mandatory-incomplete {
+  color: #ff4444; /* Red for incomplete mandatory */
+}
+
+.role-summary-line .role-count.mandatory-complete {
+  color: #28a745; /* Green for complete mandatory */
+}
+
+.role-summary-line .role-count.extra {
+  color: #ff9800; /* Orange for extra players */
+}
+
+.role-summary-line .role-count.eliminated {
+  color: #dc3545; /* Dark red for eliminated */
+
+  /* text-decoration: line-through; REMOVED THIS LINE */
+  font-weight: bold; /* Make it stand out instead */
+}
+
+@media (max-width: 768px) {
+  .role-summary-line {
+    font-size: 0.7rem;
+    min-height: 2.6em; /* Slightly more space on mobile */
   }
 }

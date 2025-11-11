@@ -6,7 +6,6 @@ const backgroundUrls = [
   "/images/playercard bg purple.png",
 ];
 
-// ========== GLOBAL CONSTANTS ==========
 const CATEGORY_ORDER = [
   "BAT",
   "BAT WK",
@@ -19,7 +18,6 @@ const CATEGORY_ORDER = [
   "UC-SPIN",
 ];
 
-// Rest of your auction2.js code...
 const ALL_TEAMS = [
   "CSK",
   "MI",
@@ -32,6 +30,354 @@ const ALL_TEAMS = [
   "GT",
   "LSG",
 ];
+
+// ========== TEAM COMBINATION TRACKING ==========
+
+// Mandatory role requirements
+const MANDATORY_REQUIREMENTS = {
+  BAT: 3, // 3 batsmen mandatory
+  FBOWL: 2, // 2 fast bowlers mandatory
+  SPIN: 2, // 2 spinners mandatory
+  ALL: 1, // 1 all-rounder mandatory
+  "BAT WK": 1, // 1 wicket-keeper mandatory
+};
+
+// Role mappings for counting
+const ROLE_CATEGORIES = {
+  BAT: ["BAT"],
+  BOWL: ["FBOWL", "SPIN"], // Both fast and spin count as bowlers
+  ALL: ["ALL"],
+  WK: ["BAT WK"],
+};
+
+function calculateTeamCombination(teamPlayers) {
+  const roleCounts = calculateRoleCounts(teamPlayers);
+
+  // Calculate current counts - BOWL is total of FBOWL + SPIN
+  const current = {
+    BAT: roleCounts.BAT || 0,
+    BOWL: (roleCounts.FBOWL || 0) + (roleCounts.SPIN || 0), // Total bowlers
+    ALL: roleCounts.ALL || 0,
+    WK: roleCounts["BAT WK"] || 0,
+    FBOWL: roleCounts.FBOWL || 0,
+    SPIN: roleCounts.SPIN || 0,
+    TOTAL: teamPlayers.length,
+  };
+
+  // Calculate remaining mandatory slots - BOWL has 4 total mandatory (any combination)
+  const remainingMandatory = {
+    BAT: Math.max(0, MANDATORY_REQUIREMENTS.BAT - current.BAT),
+    BOWL: Math.max(0, 4 - current.BOWL), // 4 total bowlers mandatory (FBOWL + SPIN)
+    ALL: Math.max(0, MANDATORY_REQUIREMENTS.ALL - current.ALL),
+    WK: Math.max(0, MANDATORY_REQUIREMENTS["BAT WK"] - current.WK),
+  };
+
+  // Calculate total remaining mandatory slots
+  const totalRemainingMandatory = Object.values(remainingMandatory).reduce(
+    (sum, count) => sum + count,
+    0
+  );
+
+  // Calculate available extra slots (11 total - mandatory filled - remaining mandatory)
+  const filledMandatory =
+    (current.BAT >= 3 ? 3 : current.BAT) +
+    (current.BOWL >= 4 ? 4 : current.BOWL) +
+    (current.ALL >= 1 ? 1 : current.ALL) +
+    (current.WK >= 1 ? 1 : current.WK);
+
+  const availableExtraSlots = 11 - filledMandatory - totalRemainingMandatory;
+
+  return {
+    current,
+    remainingMandatory,
+    totalRemainingMandatory,
+    availableExtraSlots,
+    isTeamComplete: teamPlayers.length >= 11,
+    canBidMore: teamPlayers.length < 11,
+  };
+}
+
+function canBidForPlayer(
+  teamCombination,
+  playerRole,
+  currentRoleCounts,
+  totalPlayers
+) {
+  const { remainingMandatory, availableExtraSlots, current, isTeamComplete } =
+    teamCombination;
+
+  // If team is complete, cannot bid
+  if (isTeamComplete) {
+    return { canBid: false, reason: "Team already has 11 players!" };
+  }
+
+  // Define mandatory requirements
+  const MANDATORY_REQS = {
+    BAT: 3,
+    BOWL: 4, // Total bowlers (FBOWL + SPIN)
+    ALL: 1,
+    "BAT WK": 1,
+  };
+
+  const currentCount = currentRoleCounts[playerRole] || 0;
+  const mandatoryReq = MANDATORY_REQS[playerRole] || 0;
+
+  // Special handling for bowlers
+  if (playerRole === "FBOWL" || playerRole === "SPIN") {
+    const totalBowlers = current.BOWL || 0;
+    const mandatoryReq = 4; // Total bowlers required
+
+    // Check if bowler limit is reached (4 mandatory + 2 extra = 6 total)
+    if (totalBowlers >= 6) {
+      return { canBid: false, reason: "Maximum 6 bowlers allowed!" };
+    }
+
+    // Check if we need mandatory bowlers
+    const needsMandatoryBowlers = totalBowlers < 4;
+
+    if (needsMandatoryBowlers) {
+      return { canBid: true, reason: "Mandatory bowler slot available" };
+    } else {
+      // For extra bowlers, check available extra slots
+      const otherMandatoryRoles = ["BAT", "ALL", "BAT WK"].filter(
+        (role) => (current[role] || 0) < MANDATORY_REQS[role]
+      );
+
+      const slotsNeededForOtherMandatory = otherMandatoryRoles.reduce(
+        (sum, role) => sum + (MANDATORY_REQS[role] - (current[role] || 0)),
+        0
+      );
+
+      const totalAvailableSlots = 11 - totalPlayers;
+      const effectiveExtraSlots =
+        totalAvailableSlots - slotsNeededForOtherMandatory;
+
+      if (effectiveExtraSlots > 0) {
+        return { canBid: true, reason: "Available in extra slots" };
+      } else {
+        return {
+          canBid: false,
+          reason:
+            "No slots available - need to fill other mandatory roles first",
+        };
+      }
+    }
+  }
+
+  // For non-bowler roles, use the original logic
+  const needsMandatory = currentCount < mandatoryReq;
+
+  // Calculate remaining mandatory slots across all roles
+  const totalRemainingMandatory = Object.values(remainingMandatory).reduce(
+    (sum, count) => sum + count,
+    0
+  );
+
+  // Calculate available slots for this specific role (mandatory + 2 extra)
+  let availableForThisRole = mandatoryReq + 2;
+
+  // Check if role limit is reached
+  if (currentCount >= availableForThisRole) {
+    return {
+      canBid: false,
+      reason: `Maximum ${availableForThisRole} ${playerRole} players allowed!`,
+    };
+  }
+
+  // Check if we need to reserve slots for other mandatory roles
+  const otherMandatoryRoles = Object.keys(remainingMandatory).filter(
+    (role) => role !== playerRole && remainingMandatory[role] > 0
+  );
+
+  const slotsNeededForOtherMandatory = otherMandatoryRoles.reduce(
+    (sum, role) => sum + remainingMandatory[role],
+    0
+  );
+  const totalAvailableSlots = 11 - totalPlayers;
+
+  if (
+    !needsMandatory &&
+    slotsNeededForOtherMandatory > 0 &&
+    totalAvailableSlots <= slotsNeededForOtherMandatory
+  ) {
+    return {
+      canBid: false,
+      reason: `Need to fill mandatory ${otherMandatoryRoles.join(
+        ", "
+      )} slots first!`,
+    };
+  }
+
+  if (needsMandatory) {
+    return { canBid: true, reason: "Mandatory slot available" };
+  } else {
+    const effectiveExtraSlots =
+      totalAvailableSlots - slotsNeededForOtherMandatory;
+    if (effectiveExtraSlots > 0) {
+      return { canBid: true, reason: "Available in extra slots" };
+    } else {
+      return {
+        canBid: false,
+        reason: "No slots available - need to fill other mandatory roles first",
+      };
+    }
+  }
+}
+
+function getTeamCombinationStatus(teamCombination, selectedPlayersForAuction) {
+  const { current, remainingMandatory } = teamCombination;
+
+  const roleDisplay = [];
+
+  // Check if team is eliminated (missing mandatory players when category is exhausted)
+  // Only check elimination if selectedPlayersForAuction is available
+  const isEliminated = selectedPlayersForAuction
+    ? checkTeamElimination(teamCombination, selectedPlayersForAuction)
+    : false;
+
+  // BAT - show orange if > 3
+  const batCount = current.BAT || 0;
+  const batStatus =
+    batCount >= 3
+      ? batCount > 3
+        ? "extra"
+        : "mandatory-complete"
+      : isEliminated && remainingMandatory.BAT > 0
+      ? "eliminated"
+      : "mandatory-incomplete";
+  roleDisplay.push(
+    `<span class="role-count ${batStatus}">BAT ${batCount}/3</span>`
+  );
+
+  // WK - show orange if > 1
+  const wkCount = current.WK || 0;
+  const wkStatus =
+    wkCount >= 1
+      ? wkCount > 1
+        ? "extra"
+        : "mandatory-complete"
+      : isEliminated && remainingMandatory.WK > 0
+      ? "eliminated"
+      : "mandatory-incomplete";
+  roleDisplay.push(
+    `<span class="role-count ${wkStatus}">WK ${wkCount}/1</span>`
+  );
+
+  // BOWL - show orange if > 4
+  const bowlCount = current.BOWL || 0;
+  const bowlStatus =
+    bowlCount >= 4
+      ? bowlCount > 4
+        ? "extra"
+        : "mandatory-complete"
+      : isEliminated &&
+        (remainingMandatory.FBOWL > 0 || remainingMandatory.SPIN > 0)
+      ? "eliminated"
+      : "mandatory-incomplete";
+  roleDisplay.push(
+    `<span class="role-count ${bowlStatus}">BOWL ${bowlCount}/4</span>`
+  );
+
+  // ALL - show orange if > 1
+  const allCount = current.ALL || 0;
+  const allStatus =
+    allCount >= 1
+      ? allCount > 1
+        ? "extra"
+        : "mandatory-complete"
+      : isEliminated && remainingMandatory.ALL > 0
+      ? "eliminated"
+      : "mandatory-incomplete";
+  roleDisplay.push(
+    `<span class="role-count ${allStatus}">ALL ${allCount}/1</span>`
+  );
+
+  return roleDisplay.join(" | ");
+}
+
+function checkTeamElimination(teamCombination, allPlayers) {
+  const { remainingMandatory } = teamCombination;
+
+  // Safety check - if allPlayers is not an array, return false
+  if (!Array.isArray(allPlayers)) {
+    return false;
+  }
+
+  return Object.keys(remainingMandatory).some((role) => {
+    if (remainingMandatory[role] > 0) {
+      // Check if players for this role are exhausted in the auction
+      let rolePlayersAvailable;
+
+      if (role === "BOWL") {
+        // For bowlers, check both FBOWL and SPIN
+        rolePlayersAvailable = allPlayers.filter((player) => {
+          if (!player || !player.role) return false;
+          return player.role === "FBOWL" || player.role === "SPIN";
+        }).length;
+      } else if (role === "WK") {
+        rolePlayersAvailable = allPlayers.filter((player) => {
+          if (!player || !player.role) return false;
+          return player.role === "BAT WK";
+        }).length;
+      } else {
+        rolePlayersAvailable = allPlayers.filter((player) => {
+          if (!player || !player.role) return false;
+          return player.role === role;
+        }).length;
+      }
+
+      return rolePlayersAvailable === 0;
+    }
+    return false;
+  });
+}
+
+// New function to check team elimination
+function checkTeamElimination(teamCombination, allPlayers) {
+  const { remainingMandatory } = teamCombination;
+
+  return Object.keys(remainingMandatory).some((role) => {
+    if (remainingMandatory[role] > 0) {
+      // Check if players for this role are exhausted in the auction
+      const rolePlayersAvailable = allPlayers.filter((player) => {
+        if (role === "WK") return player.role === "BAT WK";
+        return player.role === role;
+      }).length;
+
+      return rolePlayersAvailable === 0;
+    }
+    return false;
+  });
+}
+
+// ========== UPDATE BID VALIDATION ==========
+
+function validateBid(
+  teamPlayers,
+  playerRole,
+  username,
+  selectedPlayersForAuction
+) {
+  const teamCombination = calculateTeamCombination(teamPlayers);
+  const bidCheck = canBidForPlayer(
+    teamCombination,
+    playerRole,
+    calculateRoleCounts(teamPlayers),
+    teamPlayers.length
+  );
+
+  console.log(`🔍 Bid validation for ${username}:`, {
+    playerRole,
+    teamStatus: getTeamCombinationStatus(
+      teamCombination,
+      selectedPlayersForAuction || []
+    ),
+    canBid: bidCheck.canBid,
+    reason: bidCheck.reason,
+  });
+
+  return bidCheck;
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   const socket = io({
@@ -427,7 +773,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       console.log("Bid sound not available");
     }
   }
-  // ========== BIDDING HANDLING ==========
+
+  // ========== UPDATED BIDDING HANDLING ==========
   function handleBidButtonClick() {
     if (!currentPlayer || !auctionStarted || highestBidder === username) {
       if (highestBidder === username) {
@@ -445,29 +792,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!myTeam) return;
 
     const role = currentPlayer.role;
-    const totalPlayers = myTeam.players.length;
-    const roleCounts = calculateRoleCounts(myTeam.players);
 
-    if (totalPlayers >= 11) {
+    const totalPlayers = myTeam.players.length;
+
+    const bidValidation = validateBid(
+      myTeam.players,
+      role,
+      username,
+      selectedPlayersForAuction
+    );
+
+    if (!bidValidation.canBid) {
       showModal(
-        "You already have 11 players. You cannot bid further!",
-        "error"
+        `❌ Cannot bid for ${role}: ${bidValidation.reason}`,
+        "warning"
       );
       return;
     }
 
-    const roleLimits = {
-      BAT: MANDATORY_ROLES.BAT + 2,
-      "BAT WK": MANDATORY_ROLES["BAT WK"] + 2,
-      ALL: MANDATORY_ROLES.ALL + 2,
-      FBOWL: MANDATORY_ROLES.FBOWL + 2,
-      SPIN: MANDATORY_ROLES.SPIN + 2,
-    };
-
-    if ((roleCounts[role] || 0) >= (roleLimits[role] || 0)) {
+    // Check if team already has 11 players
+    if (totalPlayers >= 11) {
       showModal(
-        `You've already filled your ${role} quota. Cannot bid more in this category!`,
-        "warning"
+        "You already have 11 players. You cannot bid further!",
+        "error"
       );
       return;
     }
@@ -698,6 +1045,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         .bg-success {
             background: #28a745 !important;
             color: white;
+            font-weight: bold;
+        }
+
+        /* Combination status styles */
+        .combination-status {
+            font-size: 0.7rem;
+            color: #ffcc00;
+            margin-bottom: 3px;
+            line-height: 1.2;
+        }
+        
+        .team-complete .combination-status {
+            color: #28a745;
             font-weight: bold;
         }
     </style>
@@ -1228,7 +1588,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return false;
   }
 
-  // ========== TEAM BOXES DISPLAY ==========
+  // ========== UPDATED TEAM BOXES DISPLAY ==========
   function updateTeamBoxesFromActiveTeams() {
     if (!teamBoxesContainer) return;
 
@@ -1261,7 +1621,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           const totalRating = team.totalRating || 0;
           const playerCount = players.length;
           const remainingBudget = budget - totalSpent;
-          const isTeamComplete = playerCount >= 11;
+
+          // Calculate team combination
+          const teamCombination = calculateTeamCombination(players);
+          const isTeamComplete = teamCombination.isTeamComplete;
 
           const roleCounts = calculateRoleCounts(players);
           const ranking = teamRankings.find((r) => r.team === team.teamName);
@@ -1276,6 +1639,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             : `team-box team-${team.teamName} h-100 ${
                 isTeamComplete ? "team-complete" : ""
               }`;
+
+          // Get team combination status
+          const combinationStatus = getTeamCombinationStatus(
+            teamCombination,
+            selectedPlayersForAuction
+          );
 
           colDiv.innerHTML = `
                     <div class="${teamBoxClass}">
@@ -1307,18 +1676,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 <div class="playnum ${
                                   isTeamComplete ? "text-success" : ""
                                 }">
-                                    Player - ${playerCount} / 11 ${
+                                    Players: ${playerCount}/11 ${
             isTeamComplete ? "✓" : ""
           }
                                 </div>
-                                <div class="role-summary-line">
-                                    BAT ${roleCounts.BAT || 0}/3 | 
-                                    WK ${roleCounts["BAT WK"] || 0}/1 | 
-                                    BOWL ${
-                                      (roleCounts.FBOWL || 0) +
-                                      (roleCounts.SPIN || 0)
-                                    }/4 | 
-                                    ALL  ${roleCounts.ALL || 0}/1
+                                <div class="role-summary-line" id="roleSummary-${
+                                  team.teamName
+                                }">
+                                    ${combinationStatus}
                                 </div>
                                 <div class="ranking">Rating #${ratingRank} | Purse #${purseRank}</div>
                             </div>
@@ -1338,7 +1703,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                 <thead>
                                     <tr>
                                         <th>Name</th>
-                                        <th>Base</th>
+                                        <th>Role</th>
                                         <th>Price</th>
                                         <th>Rating</th>
                                     </tr>
@@ -1352,9 +1717,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                                               player.playerName ||
                                               "Unknown Player"
                                             }</td>
-                                            <td>₹${(
-                                              parseFloat(player.basePrice) || 0
-                                            ).toFixed(2)}</td>
+                                            <td>${player.role || "Unknown"}</td>
                                             <td>₹${(
                                               parseFloat(player.price) || 0
                                             ).toFixed(2)}</td>

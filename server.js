@@ -3,51 +3,137 @@ const path = require("path");
 const http = require("http");
 const fs = require("fs");
 const { Server } = require("socket.io");
+const rateLimit = require("express-rate-limit");
 
+// Environment configuration
+require("dotenv").config();
+const isProduction = process.env.NODE_ENV === "production";
 const PORT = process.env.PORT || 3000;
 
 const app = express();
 const server = http.createServer(app);
 
+// Security middleware
+app.use(express.static(path.join(__dirname, "public")));
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: isProduction ? 100 : 1000, // stricter in production
+  message: { error: "Too many requests from this IP, please try again later." },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
+
+// Security headers middleware
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
+  next();
+});
+
+// CORS configuration for production
+const allowedOrigins = isProduction
+  ? [
+      "https://yourdomain.com",
+      "https://www.yourdomain.com",
+      "https://yourapp.railway.app",
+    ]
+  : ["http://localhost:3000", "http://127.0.0.1:3000", "http://localhost:3001"];
+
 const io = new Server(server, {
   pingTimeout: 60000,
   pingInterval: 25000,
   cors: {
-    origin: "*", // Allow all origins for now
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        const msg =
+          "The CORS policy for this site does not allow access from the specified Origin.";
+        return callback(new Error(msg), false);
+      }
+      return callback(null, true);
+    },
     methods: ["GET", "POST"],
+    credentials: false,
   },
 });
 
-app.use(express.static(path.join(__dirname, "public")));
+// Enhanced AI manager with production error handling
+let enhancedAIManager;
+try {
+  const { SmartAIManager } = require("./aiplayer.js");
+  enhancedAIManager = new SmartAIManager();
+  console.log("✅ AI Manager loaded successfully");
+} catch (error) {
+  console.error("❌ Failed to load AI manager:", error.message);
+  // Create fallback AI manager to prevent crashes
+  enhancedAIManager = {
+    initializeAIPlayers: (
+      count,
+      budget,
+      assignments,
+      roomBudget,
+      totalPlayers
+    ) => {
+      console.log("⚠️ AI Manager not available - running without AI");
+      return [];
+    },
+    processAIBids: async () => {
+      console.log("⚠️ AI Manager not available - no AI bids");
+      return [];
+    },
+    updateAIPlayersWithAuctionData: () => {
+      // Silent fallback
+    },
+    updateAIOnWin: () => {
+      // Silent fallback
+    },
+    getAIPlayerByName: () => null,
+    getAIStatus: () => ({
+      aiPlayers: [],
+      message: "AI functionality not available",
+      status: "disabled",
+    }),
+  };
+}
 
-const { SmartAIManager } = require("./aiplayer.js");
-const enhancedAIManager = new SmartAIManager();
+// API Routes with enhanced error handling
+app.get("/players", async (req, res) => {
+  try {
+    const filePath = path.join(__dirname, "data", "players.json");
 
-app.get("/players", (req, res) => {
-  const filePath = path.join(__dirname, "data", "players.json");
+    // Check if file exists first
+    if (!fs.existsSync(filePath)) {
+      console.error("❌ Players file not found:", filePath);
+      return res.status(500).json({
+        error: "Players data file not found",
+        success: false,
+      });
+    }
 
-  // Check if file exists first
-  if (!fs.existsSync(filePath)) {
-    console.error("❌ Players file not found:", filePath);
-    return res.status(500).json({ error: "Players data file not found" });
+    const data = await fs.promises.readFile(filePath, "utf8");
+    const playersData = JSON.parse(data);
+    const players = playersData.players || playersData;
+
+    console.log(`✅ Loaded ${players.length} players`);
+    res.json({
+      success: true,
+      players: players,
+      count: players.length,
+    });
+  } catch (error) {
+    console.error("❌ Error loading players:", error);
+    res.status(500).json({
+      error: "Failed to load players data",
+      success: false,
+    });
   }
-
-  fs.readFile(filePath, "utf8", (err, data) => {
-    if (err) {
-      console.error("❌ Error reading players file:", err);
-      return res.status(500).json({ error: "Failed to load players" });
-    }
-
-    try {
-      const playersData = JSON.parse(data);
-      const players = playersData.players || playersData;
-      console.log(`✅ Loaded ${players.length} players`);
-      res.json(players);
-    } catch (parseError) {
-      console.error("❌ Error parsing players JSON:", parseError);
-      res.status(500).json({ error: "Invalid players data format" });
-    }
-  });
 });
 
 app.get("/", (req, res) => {
@@ -58,6 +144,18 @@ app.get("/auction", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "auction.html"));
 });
 
+// Health check endpoint
+app.get("/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    rooms: Object.keys(rooms).length,
+  });
+});
+
+// Room management
 const rooms = {};
 const ALL_TEAMS = [
   "CSK",
@@ -72,6 +170,7 @@ const ALL_TEAMS = [
   "LSG",
 ];
 
+// Utility functions
 function generateRoomCode() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   let code = "";
@@ -79,6 +178,19 @@ function generateRoomCode() {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return code;
+}
+
+function calculateRoleCounts(players) {
+  const counts = {};
+  if (!players || !Array.isArray(players)) return counts;
+
+  players.forEach((player) => {
+    if (player && player.role) {
+      const role = player.role;
+      counts[role] = (counts[role] || 0) + 1;
+    }
+  });
+  return counts;
 }
 
 function assignTeamsToUsers(users, roomCode) {
@@ -126,9 +238,10 @@ function calculateNextBidAmount(currentBid, basePrice) {
   return currentBid + 1;
 }
 
-// NEW: Function to get all teams data for AI strategy
 function getAllTeamsData(roomObj) {
   const allTeamsData = {};
+  if (!roomObj.teamAssignments) return allTeamsData;
+
   Object.keys(roomObj.teamAssignments).forEach((userName) => {
     const teamName = roomObj.teamAssignments[userName];
     allTeamsData[teamName] = roomObj.teamData[teamName] || {
@@ -140,17 +253,20 @@ function getAllTeamsData(roomObj) {
   return allTeamsData;
 }
 
-// NEW: Function to update AI players with current auction data
 function updateAIPlayersWithAuctionData(roomObj, selectedPlayersForAuction) {
   if (roomObj.aiPlayersCount > 0) {
-    const allTeamsData = getAllTeamsData(roomObj);
-    enhancedAIManager.updateAIPlayersWithAuctionData(
-      selectedPlayersForAuction || [],
-      allTeamsData
-    );
-    console.log(
-      `🤖 Updated AI players with auction data for room ${roomObj.code}`
-    );
+    try {
+      const allTeamsData = getAllTeamsData(roomObj);
+      enhancedAIManager.updateAIPlayersWithAuctionData(
+        selectedPlayersForAuction || [],
+        allTeamsData
+      );
+    } catch (error) {
+      console.error(
+        "❌ Error updating AI players with auction data:",
+        error.message
+      );
+    }
   }
 }
 
@@ -161,48 +277,51 @@ async function processEnhancedAIFirstBids(
 ) {
   if (
     !roomObj.auctionState.currentPlayer ||
-    roomObj.auctionState.currentBid > 0
+    roomObj.auctionState.currentBid > 0 ||
+    roomObj.auctionState.isAIBidding
   ) {
     return;
   }
 
   console.log(`🤖 Processing AI first bids for ${player.name}`);
 
-  const soldPlayers = Object.values(roomObj.playerTeams).map((pt) => ({
-    price: pt.price,
-    basePrice: pt.basePrice || 0.2,
-    role: pt.role || "Unknown",
-  }));
+  try {
+    const soldPlayers = Object.values(roomObj.playerTeams || {}).map((pt) => ({
+      price: pt.price,
+      basePrice: pt.basePrice || 0.2,
+      role: pt.role || "Unknown",
+    }));
 
-  // Update AI players with current data before processing bids
-  updateAIPlayersWithAuctionData(roomObj, selectedPlayersForAuction);
+    updateAIPlayersWithAuctionData(roomObj, selectedPlayersForAuction);
 
-  const aiBids = await enhancedAIManager.processAIBids(
-    player,
-    0,
-    null,
-    roomObj.teamAssignments,
-    {
-      soldPlayers: soldPlayers,
-      teams: roomObj.teamData || {},
-    }
-  );
-
-  if (aiBids.length > 0) {
-    const highestBid = aiBids[0];
-    roomObj.auctionState.currentBid = highestBid.bidAmount;
-    roomObj.auctionState.highestBidder = highestBid.username;
-
-    io.to(roomObj.code).emit("bidUpdate", {
-      amount: highestBid.bidAmount,
-      bidder: highestBid.username,
-    });
-
-    console.log(
-      `🤖 ${highestBid.username} placed first bid: ₹${highestBid.bidAmount}Cr`
+    const aiBids = await enhancedAIManager.processAIBids(
+      player,
+      0,
+      null,
+      roomObj.teamAssignments,
+      {
+        soldPlayers: soldPlayers,
+        teams: roomObj.teamData || {},
+      }
     );
-  } else {
-    console.log(`🤖 No AI first bids for ${player.name}`);
+
+    if (aiBids && aiBids.length > 0) {
+      const highestBid = aiBids[0];
+      roomObj.auctionState.currentBid = highestBid.bidAmount;
+      roomObj.auctionState.highestBidder = highestBid.username;
+
+      io.to(roomObj.code).emit("bidUpdate", {
+        amount: highestBid.bidAmount,
+        bidder: highestBid.username,
+      });
+
+      console.log(
+        `🤖 ${highestBid.username} placed first bid: ₹${highestBid.bidAmount}Cr`
+      );
+    }
+  } catch (error) {
+    console.error("❌ Error in AI first bids:", error.message);
+    roomObj.auctionState.isAIBidding = false;
   }
 }
 
@@ -212,95 +331,106 @@ async function processEnhancedAIBids(
   currentBidder,
   selectedPlayersForAuction
 ) {
-  if (!roomObj.auctionState.currentPlayer) {
+  if (!roomObj.auctionState.currentPlayer || roomObj.auctionState.isAIBidding) {
     roomObj.auctionState.isAIBidding = false;
     return;
   }
 
-  const soldPlayers = Object.values(roomObj.playerTeams).map((pt) => ({
-    price: pt.price,
-    basePrice: pt.basePrice || 0.2,
-    role: pt.role || "Unknown",
-  }));
+  try {
+    const soldPlayers = Object.values(roomObj.playerTeams || {}).map((pt) => ({
+      price: pt.price,
+      basePrice: pt.basePrice || 0.2,
+      role: pt.role || "Unknown",
+    }));
 
-  // Update AI players with current data before processing bids
-  updateAIPlayersWithAuctionData(roomObj, selectedPlayersForAuction);
+    updateAIPlayersWithAuctionData(roomObj, selectedPlayersForAuction);
 
-  const aiBids = await enhancedAIManager.processAIBids(
-    roomObj.auctionState.currentPlayer,
-    currentBid,
-    currentBidder,
-    roomObj.teamAssignments,
-    {
-      soldPlayers: soldPlayers,
-      teams: roomObj.teamData || {},
-    }
-  );
-
-  if (aiBids.length > 0) {
-    const highestBid = aiBids[0];
-    roomObj.auctionState.currentBid = highestBid.bidAmount;
-    roomObj.auctionState.highestBidder = highestBid.username;
-
-    io.to(roomObj.code).emit("bidUpdate", {
-      amount: highestBid.bidAmount,
-      bidder: highestBid.username,
-    });
-
-    console.log(
-      `🤖 ${highestBid.username} outbid with: ₹${highestBid.bidAmount}Cr`
+    const aiBids = await enhancedAIManager.processAIBids(
+      roomObj.auctionState.currentPlayer,
+      currentBid,
+      currentBidder,
+      roomObj.teamAssignments,
+      {
+        soldPlayers: soldPlayers,
+        teams: roomObj.teamData || {},
+      }
     );
 
-    setTimeout(async () => {
-      await processEnhancedAIBids(
-        roomObj,
-        highestBid.bidAmount,
-        highestBid.username,
-        selectedPlayersForAuction
+    if (aiBids && aiBids.length > 0) {
+      const highestBid = aiBids[0];
+      roomObj.auctionState.currentBid = highestBid.bidAmount;
+      roomObj.auctionState.highestBidder = highestBid.username;
+
+      io.to(roomObj.code).emit("bidUpdate", {
+        amount: highestBid.bidAmount,
+        bidder: highestBid.username,
+      });
+
+      console.log(
+        `🤖 ${highestBid.username} outbid with: ₹${highestBid.bidAmount}Cr`
       );
-    }, 1000);
-  } else {
+
+      roomObj.auctionState.isAIBidding = true;
+
+      setTimeout(async () => {
+        await processEnhancedAIBids(
+          roomObj,
+          highestBid.bidAmount,
+          highestBid.username,
+          selectedPlayersForAuction
+        );
+        roomObj.auctionState.isAIBidding = false;
+      }, 1000);
+    } else {
+      roomObj.auctionState.isAIBidding = false;
+    }
+  } catch (error) {
+    console.error("❌ Error in AI bidding:", error.message);
     roomObj.auctionState.isAIBidding = false;
-    console.log(
-      `🤖 No more AI bids for ${roomObj.auctionState.currentPlayer.name}`
-    );
   }
 }
 
+// Socket.IO connection handling
 io.on("connection", (socket) => {
   console.log("✅ New connection:", socket.id);
+
+  // Connection timeout handling
+  const connectionTimeout = setTimeout(() => {
+    if (socket.connected) {
+      console.log(`⏰ Connection ${socket.id} timed out`);
+      socket.disconnect(true);
+    }
+  }, 30000); // 30 seconds
 
   socket.on("createRoom", (data) => {
     try {
       const { name, budget } = data;
-      const aiPlayers = data.aiPlayers || 0;
+      const aiPlayers = Math.min(data.aiPlayers || 0, 8); // Limit AI players
 
       console.log(
         `🚀 CREATE_ROOM attempt: ${name}, budget: ${budget}, AI: ${aiPlayers}`
       );
 
-      if (!name) {
-        console.log("❌ CREATE_ROOM failed: Name required");
-        socket.emit("roomError", "Name is required");
+      if (!name || name.trim().length === 0) {
+        socket.emit("roomError", "Valid name is required");
         return;
       }
 
-      // Clean up old rooms first (30-minute expiry)
-      const now = Date.now();
-      const thirtyMinutes = 30 * 60 * 1000;
-      let cleanedCount = 0;
+      if (name.length > 20) {
+        socket.emit("roomError", "Name must be less than 20 characters");
+        return;
+      }
 
-      for (const [code, room] of Object.entries(rooms)) {
-        if (now - room.createdAt > thirtyMinutes) {
+      // Clean up old rooms
+      const now = Date.now();
+      const ONE_HOUR = 60 * 60 * 1000;
+
+      Object.keys(rooms).forEach((code) => {
+        if (now - rooms[code].createdAt > ONE_HOUR) {
           console.log(`🧹 Cleaning old room: ${code}`);
           delete rooms[code];
-          cleanedCount++;
         }
-      }
-
-      if (cleanedCount > 0) {
-        console.log(`🧹 Cleaned ${cleanedCount} old rooms`);
-      }
+      });
 
       // Generate unique room code
       let roomCode;
@@ -308,14 +438,12 @@ io.on("connection", (socket) => {
       do {
         roomCode = generateRoomCode();
         attempts++;
-        if (attempts > 10) {
-          throw new Error(
-            "Failed to generate unique room code after 10 attempts"
-          );
+        if (attempts > 20) {
+          throw new Error("Failed to generate unique room code");
         }
       } while (rooms[roomCode]);
 
-      const roomBudget = parseFloat(budget) || 100;
+      const roomBudget = Math.min(Math.max(parseFloat(budget) || 100, 50), 500); // Limit budget
 
       // Create room object
       const roomData = {
@@ -325,7 +453,7 @@ io.on("connection", (socket) => {
         users: [
           {
             id: socket.id,
-            name,
+            name: name.trim(),
             budget: roomBudget,
             isAdmin: true,
             connected: true,
@@ -347,38 +475,25 @@ io.on("connection", (socket) => {
         teamData: {},
         aiPlayersCount: aiPlayers,
         chatMessages: [],
-        selectedPlayersForAuction: [], // NEW: Store selected players for AI
+        selectedPlayersForAuction: [],
       };
 
       rooms[roomCode] = roomData;
 
-      console.log(
-        `✅ Room ${roomCode} created. Total rooms: ${Object.keys(rooms).length}`
-      );
-
       // Handle AI players
       if (aiPlayers > 0) {
         try {
-          const totalHumanPlayers = roomData.users.filter(
-            (u) => !u.isAI
-          ).length;
-          const totalPlayers = totalHumanPlayers + aiPlayers;
-
-          console.log(
-            `🤖 Initializing ${aiPlayers} AI players (human: ${totalHumanPlayers}, total: ${totalPlayers})`
-          );
-
           const aiPlayersList = enhancedAIManager.initializeAIPlayers(
             aiPlayers,
             roomBudget,
             roomData.teamAssignments,
             roomBudget,
-            totalPlayers
+            roomData.users.length + aiPlayers
           );
 
           aiPlayersList.forEach((aiPlayer) => {
             roomData.users.push({
-              id: `ai-${aiPlayer.name}`,
+              id: `ai-${aiPlayer.name}-${Date.now()}`,
               name: aiPlayer.name,
               budget: roomBudget,
               isAdmin: false,
@@ -387,20 +502,14 @@ io.on("connection", (socket) => {
               isAI: true,
             });
           });
-
-          console.log(
-            `✅ Initialized ${aiPlayers} AI players for room ${roomCode}`
-          );
         } catch (aiError) {
-          console.error("❌ AI initialization failed:", aiError);
-          // Continue without AI players
+          console.error("❌ AI initialization failed:", aiError.message);
         }
       }
 
       // Assign teams
       try {
         roomData.teamAssignments = assignTeamsToUsers(roomData.users, roomCode);
-
         Object.values(roomData.teamAssignments).forEach((team) => {
           roomData.teamData[team] = {
             players: [],
@@ -408,31 +517,19 @@ io.on("connection", (socket) => {
             totalRating: 0,
           };
         });
-
-        console.log(
-          `🏏 Teams assigned for room ${roomCode}:`,
-          Object.keys(roomData.teamAssignments)
-        );
       } catch (teamError) {
-        console.error("❌ Team assignment failed:", teamError);
-        // Set default team assignments
+        console.error("❌ Team assignment failed:", teamError.message);
         roomData.teamAssignments = { [name]: "CSK" };
         roomData.teamData = {
           CSK: { players: [], totalSpent: 0, totalRating: 0 },
         };
       }
 
-      // Join room and confirm
       socket.join(roomCode);
       socket.emit("roomCreated", { roomCode, isAdmin: true });
 
       console.log(
-        `🎉 Room ${roomCode} fully created by ${name}. Budget: ₹${roomBudget}Cr, AI: ${aiPlayers}, Users: ${roomData.users.length}`
-      );
-
-      // Log all current rooms for debugging
-      console.log(
-        `📊 All active rooms: ${Object.keys(rooms).join(", ") || "None"}`
+        `🎉 Room ${roomCode} created by ${name}. Users: ${roomData.users.length}`
       );
     } catch (error) {
       console.error("❌ CREATE_ROOM error:", error);
@@ -445,43 +542,30 @@ io.on("connection", (socket) => {
       const { name, roomCode } = data;
       const code = roomCode.toUpperCase().trim();
 
-      console.log(`🚪 JOIN_ROOM attempt: "${name}" to room "${code}"`);
-      console.log(
-        `📋 Available rooms: ${Object.keys(rooms).join(", ") || "None"}`
-      );
+      if (!name || name.trim().length === 0) {
+        socket.emit("roomError", "Valid name is required");
+        return;
+      }
 
       if (!rooms[code]) {
-        console.log(`❌ JOIN_ROOM failed: Room "${code}" not found`);
         socket.emit("roomError", "Room not found!");
         return;
       }
 
       const room = rooms[code];
-      const roomBudget = room.budget || 100;
-      const totalUsers = room.users.length;
-
-      console.log(
-        `✅ Room "${code}" found. Current users: ${totalUsers}, Budget: ${roomBudget}`
-      );
 
       // Check if room is full
-      if (totalUsers >= 10) {
-        console.log(
-          `❌ JOIN_ROOM failed: Room "${code}" is full (${totalUsers}/10)`
-        );
+      if (room.users.length >= 10) {
         socket.emit("roomError", "Room is full! Maximum 10 players allowed.");
         return;
       }
 
-      // Check if auction has already started
-      if (room.auctionState && room.auctionState.started) {
+      // Check if auction has started and user is new
+      if (room.auctionState.started) {
         const wasPreviousUser = room.users.some(
           (u) => u.name.toLowerCase() === name.toLowerCase() && !u.isAI
         );
         if (!wasPreviousUser) {
-          console.log(
-            `❌ JOIN_ROOM failed: Auction started, new user "${name}" cannot join`
-          );
           socket.emit(
             "roomError",
             "Auction has already started! New users cannot join."
@@ -490,7 +574,7 @@ io.on("connection", (socket) => {
         }
       }
 
-      // Check for existing user (reconnection case)
+      // Check for existing user (reconnection)
       const existingUser = room.users.find(
         (u) => u.name.toLowerCase() === name.toLowerCase() && !u.isAI
       );
@@ -498,34 +582,20 @@ io.on("connection", (socket) => {
       if (existingUser) {
         const existingSocket = io.sockets.sockets.get(existingUser.id);
         if (existingSocket?.connected) {
-          console.log(
-            `❌ JOIN_ROOM failed: Username "${name}" already taken in room "${code}"`
-          );
           socket.emit("roomError", "Username already taken in this room!");
           return;
         } else {
-          // Reconnect existing user
-          console.log(`🔁 Reconnecting user "${name}" in room "${code}"`);
+          // Reconnect
           existingUser.id = socket.id;
           existingUser.connected = true;
           existingUser.lastSeen = Date.now();
-
-          const userTeam = room.teamAssignments[existingUser.name];
-          if (userTeam && !room.teamData[userTeam]) {
-            room.teamData[userTeam] = {
-              players: [],
-              totalSpent: 0,
-              totalRating: 0,
-            };
-          }
         }
       } else {
         // Add new user
-        console.log(`👤 Adding new user "${name}" to room "${code}"`);
         const newUser = {
           id: socket.id,
-          name: name,
-          budget: roomBudget,
+          name: name.trim(),
+          budget: room.budget,
           isAdmin: false,
           connected: true,
           lastSeen: Date.now(),
@@ -534,24 +604,12 @@ io.on("connection", (socket) => {
         };
         room.users.push(newUser);
 
-        // Reassign teams for all users
-        console.log(`🔄 Reassigning teams for room "${code}"`);
+        // Reassign teams
         room.teamAssignments = assignTeamsToUsers(room.users, code);
 
-        const assignedTeams = new Set(Object.values(room.teamAssignments));
-
-        // Clean up unused teams
-        Object.keys(room.teamData).forEach((teamName) => {
-          if (!assignedTeams.has(teamName)) {
-            console.log(`🗑️ Removing unused team data: ${teamName}`);
-            delete room.teamData[teamName];
-          }
-        });
-
-        // Ensure all assigned teams have data
-        assignedTeams.forEach((teamName) => {
+        // Ensure team data exists
+        Object.values(room.teamAssignments).forEach((teamName) => {
           if (!room.teamData[teamName]) {
-            console.log(`➕ Creating team data for: ${teamName}`);
             room.teamData[teamName] = {
               players: [],
               totalSpent: 0,
@@ -559,31 +617,20 @@ io.on("connection", (socket) => {
             };
           }
         });
-
-        console.log(
-          `🏏 Teams after reassignment: ${Array.from(assignedTeams).join(", ")}`
-        );
       }
 
-      // Set admin status
       const isAdmin = room.admin === name;
       if (isAdmin) {
         const adminUser = room.users.find((u) => u.name === name);
-        if (adminUser) {
-          adminUser.isAdmin = true;
-          console.log(`⭐ User "${name}" is admin of room "${code}"`);
-        }
+        if (adminUser) adminUser.isAdmin = true;
       }
 
-      // Join socket room
       socket.join(code);
-      console.log(`✅ Socket joined room "${code}"`);
 
-      // Send room joined confirmation
       socket.emit("roomJoined", {
         roomCode: code,
         isAdmin: isAdmin,
-        budget: roomBudget,
+        budget: room.budget,
         teamAssignments: room.teamAssignments,
         teamData: room.teamData,
         auctionState: room.auctionState,
@@ -591,78 +638,57 @@ io.on("connection", (socket) => {
         users: room.users,
       });
 
-      console.log(`📤 Sent roomJoined event to "${name}" in room "${code}"`);
-
-      // Notify all users in room
       io.to(code).emit("userListUpdated", {
         users: room.users,
         teamAssignments: room.teamAssignments,
         teamData: room.teamData,
       });
-
-      console.log(
-        `📢 Notified all users in room "${code}" about user list update`
-      );
-
-      // Final success log
-      console.log(`🎉 JOIN_ROOM successful: "${name}" joined room "${code}"`);
-      console.log(
-        `📊 Room "${code}" now has ${room.users.length} users: ${room.users
-          .map((u) => u.name)
-          .join(", ")}`
-      );
     } catch (error) {
-      console.error("❌ JOIN_ROOM critical error:", error);
-      console.error("Error details:", {
-        name: data?.name,
-        roomCode: data?.roomCode,
-        errorMessage: error.message,
-        stack: error.stack,
-      });
-
+      console.error("❌ JOIN_ROOM error:", error);
       socket.emit("roomError", "Failed to join room. Please try again.");
     }
   });
 
   socket.on("joinAuctionRoom", (data) => {
     const { room, username, isAdmin } = data;
+    const roomObj = rooms[room];
+
+    if (!roomObj) {
+      socket.emit("roomError", "Room not found");
+      return;
+    }
+
     socket.join(room);
 
-    const roomObj = rooms[room];
-    if (roomObj) {
-      const user = roomObj.users.find((u) => u.name === username && !u.isAI);
-      if (user) {
-        user.id = socket.id;
-        user.connected = true;
-        user.lastSeen = Date.now();
-        user.isAdmin = roomObj.admin === username;
-      }
+    const user = roomObj.users.find((u) => u.name === username && !u.isAI);
+    if (user) {
+      user.id = socket.id;
+      user.connected = true;
+      user.lastSeen = Date.now();
+      user.isAdmin = roomObj.admin === username;
+    }
 
-      const teamCount = roomObj.users.filter((user) => user.connected).length;
+    socket.emit("roomState", {
+      users: roomObj.users,
+      teamAssignments: roomObj.teamAssignments,
+      teamData: roomObj.teamData,
+      auctionState: roomObj.auctionState,
+      playerTeams: roomObj.playerTeams,
+      teamCount: roomObj.users.filter((user) => user.connected).length,
+    });
 
-      socket.emit("roomState", {
-        users: roomObj.users,
-        teamAssignments: roomObj.teamAssignments,
-        teamData: roomObj.teamData,
-        auctionState: roomObj.auctionState,
-        playerTeams: roomObj.playerTeams,
-        teamCount: teamCount,
-      });
-
-      if (roomObj.auctionState && roomObj.auctionState.started) {
-        socket.emit("auctionStarted");
-        if (roomObj.auctionState.currentPlayer) {
-          socket.emit("playerSelected", roomObj.auctionState.currentPlayer);
-          socket.emit("bidUpdate", {
-            amount: roomObj.auctionState.currentBid,
-            bidder: roomObj.auctionState.highestBidder,
-          });
-        }
+    if (roomObj.auctionState.started) {
+      socket.emit("auctionStarted");
+      if (roomObj.auctionState.currentPlayer) {
+        socket.emit("playerSelected", roomObj.auctionState.currentPlayer);
+        socket.emit("bidUpdate", {
+          amount: roomObj.auctionState.currentBid,
+          bidder: roomObj.auctionState.highestBidder,
+        });
       }
     }
   });
 
-  // NEW: Socket event to update selected players for auction
   socket.on("updateSelectedPlayers", (data) => {
     const { room, selectedPlayers } = data;
     const roomObj = rooms[room];
@@ -671,30 +697,21 @@ io.on("connection", (socket) => {
     const user = roomObj.users.find((u) => u.id === socket.id);
     if (user && user.name === roomObj.admin) {
       roomObj.selectedPlayersForAuction = selectedPlayers;
-      console.log(
-        `🎯 Updated selected players for room ${room}: ${selectedPlayers.length} players`
-      );
-
-      // Update AI players with the new player list
       updateAIPlayersWithAuctionData(roomObj, selectedPlayers);
     }
   });
 
   socket.on("startAuction", (roomCode) => {
     const room = rooms[roomCode];
-    if (!room) return;
+    if (!room) {
+      socket.emit("roomError", "Room not found!");
+      return;
+    }
 
     const user = room.users.find((u) => u.id === socket.id);
     if (user && user.name === room.admin) {
       room.auctionState.started = true;
-      if (!room.auctionState.currentPlayer) {
-        room.auctionState.currentCategoryIndex = 0;
-        room.auctionState.currentPlayerIndex = 0;
-      }
-
-      // Update AI players when auction starts
       updateAIPlayersWithAuctionData(room, room.selectedPlayersForAuction);
-
       io.to(roomCode).emit("auctionStarted");
     }
   });
@@ -742,16 +759,12 @@ io.on("connection", (socket) => {
 
     const user = roomObj.users.find((u) => u.id === socket.id);
     if (user && user.name === roomObj.admin) {
-      console.log(`🎯 Admin selected player: ${player.name}`);
-
       roomObj.auctionState.currentPlayer = player;
       roomObj.auctionState.currentBid = 0;
       roomObj.auctionState.highestBidder = null;
 
       io.to(room).emit("playerSelected", player);
       io.to(room).emit("bidUpdate", { amount: 0, bidder: null });
-
-      console.log(`📢 Player ${player.name} broadcast to room ${room}`);
 
       if (roomObj.aiPlayersCount > 0) {
         setTimeout(async () => {
@@ -824,7 +837,6 @@ io.on("connection", (socket) => {
 
     if (roomObj.aiPlayersCount > 0 && !roomObj.auctionState.isAIBidding) {
       roomObj.auctionState.isAIBidding = true;
-
       setTimeout(async () => {
         await processEnhancedAIBids(
           roomObj,
@@ -846,10 +858,10 @@ io.on("connection", (socket) => {
     if (user && user.name === roomObj.admin) {
       roomObj.playerTeams[playerId] = { team: team, price: price };
 
+      // Update AI if applicable
       if (roomObj.aiPlayersCount > 0 && roomObj.auctionState.highestBidder) {
         const winningAIName = roomObj.auctionState.highestBidder;
-        const aiPlayer = enhancedAIManager.getAIPlayerByName(winningAIName);
-        if (aiPlayer) {
+        try {
           enhancedAIManager.updateAIOnWin(
             winningAIName,
             {
@@ -861,13 +873,12 @@ io.on("connection", (socket) => {
             },
             price
           );
-          console.log(
-            `🤖 ${winningAIName} team status:`,
-            aiPlayer.getTeamStatus()
-          );
+        } catch (error) {
+          console.error("❌ Error updating AI on win:", error.message);
         }
       }
 
+      // Update team data
       if (roomObj.teamData[team]) {
         roomObj.teamData[team].players.push({
           playerId: playerId,
@@ -903,8 +914,6 @@ io.on("connection", (socket) => {
       });
 
       io.to(room).emit("teamDataUpdated", roomObj.teamData);
-
-      // Update AI players with latest team data after player is sold
       updateAIPlayersWithAuctionData(
         roomObj,
         roomObj.selectedPlayersForAuction
@@ -922,51 +931,25 @@ io.on("connection", (socket) => {
     }
   });
 
-  // NEW: Socket event to get AI status for debugging
   socket.on("getAIStatus", (roomCode) => {
     const room = rooms[roomCode];
     if (!room || room.aiPlayersCount === 0) return;
 
     const aiStatus = enhancedAIManager.getAIStatus();
     socket.emit("aiStatusUpdate", aiStatus);
-    console.log("🤖 AI Status:", aiStatus);
   });
-});
 
-setInterval(() => {
-  const now = Date.now();
-  const sixtyMinutes = 60 * 60 * 1000;
+  socket.on("disconnect", (reason) => {
+    console.log(`❌ User disconnected: ${socket.id} - ${reason}`);
+    clearTimeout(connectionTimeout);
 
-  for (const [roomCode, room] of Object.entries(rooms)) {
-    let needsUpdate = false;
-    let activeUsers = [];
-
-    room.users.forEach((user) => {
-      const socketExists = io.sockets.sockets.get(user.id);
-      if (socketExists?.connected || user.isAI) {
-        user.connected = true;
-        user.lastSeen = now;
-        activeUsers.push(user);
-      } else if (now - user.lastSeen < sixtyMinutes) {
+    // Mark user as disconnected
+    for (const [roomCode, room] of Object.entries(rooms)) {
+      const user = room.users.find((u) => u.id === socket.id);
+      if (user && !user.isAI) {
         user.connected = false;
-        activeUsers.push(user);
-      } else {
-        if (room.admin === user.name && activeUsers.length > 0 && !user.isAI) {
-          room.admin = activeUsers[0].name;
-          activeUsers[0].isAdmin = true;
-        }
-        needsUpdate = true;
-      }
-    });
+        user.lastSeen = Date.now();
 
-    if (needsUpdate) {
-      room.users = activeUsers;
-      if (activeUsers.length > 0) {
-        room.teamAssignments = assignTeamsToUsers(activeUsers, roomCode);
-      }
-      if (room.users.length === 0) {
-        delete rooms[roomCode];
-      } else {
         io.to(roomCode).emit("userListUpdated", {
           users: room.users,
           teamAssignments: room.teamAssignments,
@@ -974,9 +957,76 @@ setInterval(() => {
         });
       }
     }
-  }
-}, 60000);
+  });
+});
+
+// Enhanced room cleanup
+setInterval(() => {
+  const now = Date.now();
+  const ONE_HOUR = 60 * 60 * 1000;
+  const THIRTY_MINUTES = 30 * 60 * 1000;
+
+  Object.keys(rooms).forEach((roomCode) => {
+    const room = rooms[roomCode];
+
+    // Remove expired rooms (1 hour)
+    if (now - room.createdAt > ONE_HOUR) {
+      console.log(`🧹 Removing expired room: ${roomCode}`);
+      delete rooms[roomCode];
+      return;
+    }
+
+    // Remove disconnected users (30 minutes)
+    const activeUsers = room.users.filter(
+      (user) =>
+        user.connected || now - user.lastSeen < THIRTY_MINUTES || user.isAI
+    );
+
+    if (activeUsers.length !== room.users.length) {
+      room.users = activeUsers;
+      if (activeUsers.length > 0) {
+        room.teamAssignments = assignTeamsToUsers(activeUsers, roomCode);
+        io.to(roomCode).emit("userListUpdated", {
+          users: room.users,
+          teamAssignments: room.teamAssignments,
+          teamData: room.teamData,
+        });
+      } else {
+        delete rooms[roomCode];
+      }
+    }
+  });
+}, 60000); // Run every minute
+
+// Global error handlers
+process.on("uncaughtException", (error) => {
+  console.error("❌ Uncaught Exception:", error);
+  if (!isProduction) process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+// Graceful shutdown
+process.on("SIGTERM", () => {
+  console.log("🛑 SIGTERM received, shutting down gracefully");
+  server.close(() => {
+    console.log("✅ Server closed");
+    process.exit(0);
+  });
+});
+
+process.on("SIGINT", () => {
+  console.log("🛑 SIGINT received, shutting down gracefully");
+  server.close(() => {
+    console.log("✅ Server closed");
+    process.exit(0);
+  });
+});
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`🌐 Environment: ${isProduction ? "Production" : "Development"}`);
+  console.log(`📊 Current rooms: ${Object.keys(rooms).length}`);
 });

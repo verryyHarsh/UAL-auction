@@ -126,7 +126,39 @@ function calculateNextBidAmount(currentBid, basePrice) {
   return currentBid + 1;
 }
 
-async function processEnhancedAIFirstBids(roomObj, player) {
+// NEW: Function to get all teams data for AI strategy
+function getAllTeamsData(roomObj) {
+  const allTeamsData = {};
+  Object.keys(roomObj.teamAssignments).forEach((userName) => {
+    const teamName = roomObj.teamAssignments[userName];
+    allTeamsData[teamName] = roomObj.teamData[teamName] || {
+      players: [],
+      totalSpent: 0,
+      totalRating: 0,
+    };
+  });
+  return allTeamsData;
+}
+
+// NEW: Function to update AI players with current auction data
+function updateAIPlayersWithAuctionData(roomObj, selectedPlayersForAuction) {
+  if (roomObj.aiPlayersCount > 0) {
+    const allTeamsData = getAllTeamsData(roomObj);
+    enhancedAIManager.updateAIPlayersWithAuctionData(
+      selectedPlayersForAuction || [],
+      allTeamsData
+    );
+    console.log(
+      `🤖 Updated AI players with auction data for room ${roomObj.code}`
+    );
+  }
+}
+
+async function processEnhancedAIFirstBids(
+  roomObj,
+  player,
+  selectedPlayersForAuction
+) {
   if (
     !roomObj.auctionState.currentPlayer ||
     roomObj.auctionState.currentBid > 0
@@ -141,6 +173,9 @@ async function processEnhancedAIFirstBids(roomObj, player) {
     basePrice: pt.basePrice || 0.2,
     role: pt.role || "Unknown",
   }));
+
+  // Update AI players with current data before processing bids
+  updateAIPlayersWithAuctionData(roomObj, selectedPlayersForAuction);
 
   const aiBids = await enhancedAIManager.processAIBids(
     player,
@@ -171,7 +206,12 @@ async function processEnhancedAIFirstBids(roomObj, player) {
   }
 }
 
-async function processEnhancedAIBids(roomObj, currentBid, currentBidder) {
+async function processEnhancedAIBids(
+  roomObj,
+  currentBid,
+  currentBidder,
+  selectedPlayersForAuction
+) {
   if (!roomObj.auctionState.currentPlayer) {
     roomObj.auctionState.isAIBidding = false;
     return;
@@ -182,6 +222,9 @@ async function processEnhancedAIBids(roomObj, currentBid, currentBidder) {
     basePrice: pt.basePrice || 0.2,
     role: pt.role || "Unknown",
   }));
+
+  // Update AI players with current data before processing bids
+  updateAIPlayersWithAuctionData(roomObj, selectedPlayersForAuction);
 
   const aiBids = await enhancedAIManager.processAIBids(
     roomObj.auctionState.currentPlayer,
@@ -212,7 +255,8 @@ async function processEnhancedAIBids(roomObj, currentBid, currentBidder) {
       await processEnhancedAIBids(
         roomObj,
         highestBid.bidAmount,
-        highestBid.username
+        highestBid.username,
+        selectedPlayersForAuction
       );
     }, 1000);
   } else {
@@ -303,6 +347,7 @@ io.on("connection", (socket) => {
         teamData: {},
         aiPlayersCount: aiPlayers,
         chatMessages: [],
+        selectedPlayersForAuction: [], // NEW: Store selected players for AI
       };
 
       rooms[roomCode] = roomData;
@@ -394,6 +439,7 @@ io.on("connection", (socket) => {
       socket.emit("roomError", "Failed to create room. Please try again.");
     }
   });
+
   socket.on("joinRoom", (data) => {
     try {
       const { name, roomCode } = data;
@@ -616,6 +662,24 @@ io.on("connection", (socket) => {
     }
   });
 
+  // NEW: Socket event to update selected players for auction
+  socket.on("updateSelectedPlayers", (data) => {
+    const { room, selectedPlayers } = data;
+    const roomObj = rooms[room];
+    if (!roomObj) return;
+
+    const user = roomObj.users.find((u) => u.id === socket.id);
+    if (user && user.name === roomObj.admin) {
+      roomObj.selectedPlayersForAuction = selectedPlayers;
+      console.log(
+        `🎯 Updated selected players for room ${room}: ${selectedPlayers.length} players`
+      );
+
+      // Update AI players with the new player list
+      updateAIPlayersWithAuctionData(roomObj, selectedPlayers);
+    }
+  });
+
   socket.on("startAuction", (roomCode) => {
     const room = rooms[roomCode];
     if (!room) return;
@@ -627,6 +691,10 @@ io.on("connection", (socket) => {
         room.auctionState.currentCategoryIndex = 0;
         room.auctionState.currentPlayerIndex = 0;
       }
+
+      // Update AI players when auction starts
+      updateAIPlayersWithAuctionData(room, room.selectedPlayersForAuction);
+
       io.to(roomCode).emit("auctionStarted");
     }
   });
@@ -687,7 +755,11 @@ io.on("connection", (socket) => {
 
       if (roomObj.aiPlayersCount > 0) {
         setTimeout(async () => {
-          await processEnhancedAIFirstBids(roomObj, player);
+          await processEnhancedAIFirstBids(
+            roomObj,
+            player,
+            roomObj.selectedPlayersForAuction
+          );
         }, 150);
       }
     }
@@ -754,7 +826,12 @@ io.on("connection", (socket) => {
       roomObj.auctionState.isAIBidding = true;
 
       setTimeout(async () => {
-        await processEnhancedAIBids(roomObj, bidAmount, username);
+        await processEnhancedAIBids(
+          roomObj,
+          bidAmount,
+          username,
+          roomObj.selectedPlayersForAuction
+        );
       }, 1000);
     }
   });
@@ -826,6 +903,12 @@ io.on("connection", (socket) => {
       });
 
       io.to(room).emit("teamDataUpdated", roomObj.teamData);
+
+      // Update AI players with latest team data after player is sold
+      updateAIPlayersWithAuctionData(
+        roomObj,
+        roomObj.selectedPlayersForAuction
+      );
     }
   });
 
@@ -837,6 +920,16 @@ io.on("connection", (socket) => {
         user.connected = true;
       }
     }
+  });
+
+  // NEW: Socket event to get AI status for debugging
+  socket.on("getAIStatus", (roomCode) => {
+    const room = rooms[roomCode];
+    if (!room || room.aiPlayersCount === 0) return;
+
+    const aiStatus = enhancedAIManager.getAIStatus();
+    socket.emit("aiStatusUpdate", aiStatus);
+    console.log("🤖 AI Status:", aiStatus);
   });
 });
 

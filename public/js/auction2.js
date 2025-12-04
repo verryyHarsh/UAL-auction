@@ -122,46 +122,37 @@ function canBidForPlayer(
   const currentCount = currentRoleCounts[playerRole] || 0;
   const mandatoryReq = MANDATORY_REQS[playerRole] || 0;
 
-  // Special handling for bowlers
+  // 🟢 Bowlers validation (FBOWL + SPIN together)
   if (playerRole === "FBOWL" || playerRole === "SPIN") {
-    const totalBowlers = current.BOWL || 0;
-    const mandatoryReq = 4; // Total bowlers required
+    const totalBowlers = current.BOWL || 0; // FBOWL + SPIN
 
-    // Check if bowler limit is reached (4 mandatory + 2 extra = 6 total)
-    if (totalBowlers >= 6) {
-      return { canBid: false, reason: "Maximum 6 bowlers allowed!" };
-    }
-
-    // Check if we need mandatory bowlers
-    const needsMandatoryBowlers = totalBowlers < 4;
-
-    if (needsMandatoryBowlers) {
+    // Mandatory bowlers = 4
+    if (totalBowlers < 4) {
       return { canBid: true, reason: "Mandatory bowler slot available" };
-    } else {
-      // For extra bowlers, check available extra slots
-      const otherMandatoryRoles = ["BAT", "ALL", "BAT WK"].filter(
-        (role) => (current[role] || 0) < MANDATORY_REQS[role]
-      );
-
-      const slotsNeededForOtherMandatory = otherMandatoryRoles.reduce(
-        (sum, role) => sum + (MANDATORY_REQS[role] - (current[role] || 0)),
-        0
-      );
-
-      const totalAvailableSlots = 11 - totalPlayers;
-      const effectiveExtraSlots =
-        totalAvailableSlots - slotsNeededForOtherMandatory;
-
-      if (effectiveExtraSlots > 0) {
-        return { canBid: true, reason: "Available in extra slots" };
-      } else {
-        return {
-          canBid: false,
-          reason:
-            "No slots available - need to fill other mandatory roles first",
-        };
-      }
     }
+
+    // After 4 → bowlers go to EXTRA SLOT logic
+    const otherMandatoryRoles = ["BAT", "ALL", "WK"].filter(
+      (role) => remainingMandatory[role] > 0
+    );
+
+    const slotsNeededForOtherMandatory = otherMandatoryRoles.reduce(
+      (sum, role) => sum + remainingMandatory[role],
+      0
+    );
+
+    const totalAvailableSlots = 11 - totalPlayers;
+
+    // If no slot to finish mandatory non-bowler roles → block
+    if (totalAvailableSlots <= slotsNeededForOtherMandatory) {
+      return {
+        canBid: false,
+        reason: "Need to finish other mandatory roles first!",
+      };
+    }
+
+    // Otherwise allowed as extra bowler
+    return { canBid: true, reason: "Extra bowler slot available" };
   }
 
   // For non-bowler roles, use the original logic

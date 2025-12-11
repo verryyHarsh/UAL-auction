@@ -23,6 +23,10 @@ app.use(express.static(path.join(__dirname, "public")));
 const { SmartAIManager } = require("./aiplayer.js");
 const enhancedAIManager = new SmartAIManager();
 
+// Add Rating Randomizer
+const RatingRandomizer = require("./randomrating.js");
+const ratingRandomizer = new RatingRandomizer();
+
 app.get("/players", (req, res) => {
   const filePath = path.join(__dirname, "data", "players.json");
 
@@ -41,13 +45,31 @@ app.get("/players", (req, res) => {
     try {
       const playersData = JSON.parse(data);
       const players = playersData.players || playersData;
-      console.log(`✅ Loaded ${players.length} players`);
-      res.json(players);
+      console.log(`✅ Loaded ${players.length} players from file`);
+
+      // Extract base ratings first
+      ratingRandomizer.extractBaseRatings(players);
+
+      // Randomize ratings for this session
+      const randomizedPlayers =
+        ratingRandomizer.randomizePlayerRatings(players);
+
+      console.log(
+        `🎲 Randomized ratings for ${randomizedPlayers.length} players`
+      );
+
+      res.json(randomizedPlayers);
     } catch (parseError) {
       console.error("❌ Error parsing players JSON:", parseError);
       res.status(500).json({ error: "Invalid players data format" });
     }
   });
+});
+
+// Optional: Add endpoint to get rating stats
+app.get("/rating-stats", (req, res) => {
+  const stats = ratingRandomizer.getRatingStats();
+  res.json(stats);
 });
 
 app.get("/", (req, res) => {
@@ -731,6 +753,11 @@ io.on("connection", (socket) => {
       room.auctionState.currentPlayer = null;
       room.auctionState.currentBid = 0;
       room.auctionState.highestBidder = null;
+
+      // Reset the rating randomizer for next game
+      ratingRandomizer.reset();
+      console.log(`🔄 Rating randomizer reset for room ${roomCode}`);
+
       io.to(roomCode).emit("auctionEnded");
     }
   });
@@ -930,6 +957,13 @@ io.on("connection", (socket) => {
     const aiStatus = enhancedAIManager.getAIStatus();
     socket.emit("aiStatusUpdate", aiStatus);
     console.log("🤖 AI Status:", aiStatus);
+  });
+
+  // NEW: Socket event to get rating stats
+  socket.on("getRatingStats", (roomCode) => {
+    const stats = ratingRandomizer.getRatingStats();
+    socket.emit("ratingStatsUpdate", stats);
+    console.log("📊 Rating Stats:", stats);
   });
 });
 

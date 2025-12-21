@@ -482,39 +482,41 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   updateBudgetDisplay(budget);
   preloadBackgroundImages();
+// In the player loading section, update the fetch call:
+try {
+  console.log("🔄 Loading players from server...");
+  // Pass room parameter to get consistent randomized players
+  const response = await fetch(`/players?room=${encodeURIComponent(roomCode)}`);
 
-  // Load players and filter based on team count
-  try {
-    console.log("🔄 Loading players from server...");
-    const response = await fetch("/players");
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    players = data.players || data;
-    console.log(`✅ Loaded ${players.length} players from server`);
-
-    // Process player data
-    players = players.map((player, index) => ({
-      ...player,
-      id: `player-${index}`,
-      sequence: extractSequenceNumber(player.category),
-    }));
-
-    if (players.length === 0) {
-      console.error("❌ No players loaded");
-      showModal("No players available for auction!", "error");
-      return;
-    }
-
-    players = sortPlayersByCategoryAndSequence(players);
-    console.log("🎯 Players sorted by category and sequence");
-  } catch (err) {
-    console.error("❌ Error loading players:", err);
-    showModal("Failed to load players data!", "error");
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
   }
+
+  const data = await response.json();
+  players = data.players || data;
+  
+  console.log(`✅ Loaded ${players.length} players from server for room ${roomCode}`);
+  console.log(`🎯 Using room-specific randomized ratings`);
+
+  // Process player data
+  players = players.map((player, index) => ({
+    ...player,
+    id: `player-${index}`,
+    sequence: extractSequenceNumber(player.category),
+  }));
+
+  if (players.length === 0) {
+    console.error("❌ No players loaded");
+    showModal("No players available for auction!", "error");
+    return;
+  }
+
+  players = sortPlayersByCategoryAndSequence(players);
+  console.log("🎯 Players sorted by category and sequence");
+} catch (err) {
+  console.error("❌ Error loading players:", err);
+  showModal("Failed to load players data!", "error");
+}
 
   showWaitingForAuctionMessage();
   socket.emit("joinAuctionRoom", { room: roomCode, username, isAdmin });

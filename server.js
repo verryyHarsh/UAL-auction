@@ -27,7 +27,9 @@ const enhancedAIManager = new SmartAIManager();
 const RatingRandomizer = require("./randomrating.js");
 const ratingRandomizer = new RatingRandomizer();
 
+
 app.get("/players", (req, res) => {
+  const { room } = req.query; // Get room code from query parameter
   const filePath = path.join(__dirname, "data", "players.json");
 
   // Check if file exists first
@@ -44,28 +46,34 @@ app.get("/players", (req, res) => {
 
     try {
       const playersData = JSON.parse(data);
-      const players = playersData.players || playersData;
+      let players = playersData.players || playersData;
       console.log(`✅ Loaded ${players.length} players from file`);
 
-      // Extract base ratings first
-      ratingRandomizer.extractBaseRatings(players);
+      // If room is provided and exists, use its randomized players
+      if (room && rooms[room] && rooms[room].randomizedPlayers.length > 0) {
+        console.log(`🎯 Using pre-randomized players for room ${room}`);
+        res.json(rooms[room].randomizedPlayers);
+      } else {
+        // Randomize ratings for this session
+        ratingRandomizer.extractBaseRatings(players);
+        const randomizedPlayers = ratingRandomizer.randomizePlayerRatings(players);
 
-      // Randomize ratings for this session
-      const randomizedPlayers =
-        ratingRandomizer.randomizePlayerRatings(players);
+        console.log(`🎲 Randomized ratings for ${randomizedPlayers.length} players`);
 
-      console.log(
-        `🎲 Randomized ratings for ${randomizedPlayers.length} players`
-      );
+        // Store in room if room exists
+        if (room && rooms[room]) {
+          rooms[room].randomizedPlayers = randomizedPlayers;
+          console.log(`💾 Stored randomized players for room ${room}`);
+        }
 
-      res.json(randomizedPlayers);
+        res.json(randomizedPlayers);
+      }
     } catch (parseError) {
       console.error("❌ Error parsing players JSON:", parseError);
       res.status(500).json({ error: "Invalid players data format" });
     }
   });
 });
-
 // Optional: Add endpoint to get rating stats
 app.get("/rating-stats", (req, res) => {
   const stats = ratingRandomizer.getRatingStats();
@@ -369,7 +377,8 @@ io.on("connection", (socket) => {
         teamData: {},
         aiPlayersCount: aiPlayers,
         chatMessages: [],
-        selectedPlayersForAuction: [], // NEW: Store selected players for AI
+        selectedPlayersForAuction: [], 
+        randomizedPlayers: [],
       };
 
       rooms[roomCode] = roomData;

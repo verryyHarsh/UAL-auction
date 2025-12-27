@@ -27,7 +27,8 @@ const enhancedAIManager = new SmartAIManager();
 const RatingRandomizer = require("./randomrating.js");
 const ratingRandomizer = new RatingRandomizer();
 
-
+const recentMatches = [];
+const rooms = {};
 app.get("/players", (req, res) => {
   const { room } = req.query; // Get room code from query parameter
   const filePath = path.join(__dirname, "data", "players.json");
@@ -56,9 +57,12 @@ app.get("/players", (req, res) => {
       } else {
         // Randomize ratings for this session
         ratingRandomizer.extractBaseRatings(players);
-        const randomizedPlayers = ratingRandomizer.randomizePlayerRatings(players);
+        const randomizedPlayers =
+          ratingRandomizer.randomizePlayerRatings(players);
 
-        console.log(`🎲 Randomized ratings for ${randomizedPlayers.length} players`);
+        console.log(
+          `🎲 Randomized ratings for ${randomizedPlayers.length} players`
+        );
 
         // Store in room if room exists
         if (room && rooms[room]) {
@@ -87,8 +91,10 @@ app.get("/", (req, res) => {
 app.get("/auction", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "auction.html"));
 });
+app.get("/recent-matches", (req, res) => {
+  res.json(recentMatches);
+});
 
-const rooms = {};
 const ALL_TEAMS = [
   "CSK",
   "MI",
@@ -373,11 +379,12 @@ io.on("connection", (socket) => {
           isAIBidding: false,
         },
         playerTeams: {},
+        appearedPlayerIds: [],
         teamAssignments: {},
         teamData: {},
         aiPlayersCount: aiPlayers,
         chatMessages: [],
-        selectedPlayersForAuction: [], 
+        selectedPlayersForAuction: [],
         randomizedPlayers: [],
       };
 
@@ -677,6 +684,7 @@ io.on("connection", (socket) => {
         teamData: roomObj.teamData,
         auctionState: roomObj.auctionState,
         playerTeams: roomObj.playerTeams,
+        appearedPlayerIds: roomObj.appearedPlayerIds,
         teamCount: teamCount,
       });
 
@@ -754,10 +762,31 @@ io.on("connection", (socket) => {
 
   socket.on("endAuction", (roomCode) => {
     const room = rooms[roomCode];
-    if (!room) return;
+    if (!room || !room.auctionState.started) return;
 
     const user = room.users.find((u) => u.id === socket.id);
     if (user && user.name === room.admin) {
+      // (LEADERBOARD SAVE)
+      const leaderboard = Object.keys(room.teamData)
+        .map((teamName) => {
+          const team = room.teamData[teamName];
+          return {
+            teamName,
+            totalRating: team.totalRating || 0,
+            totalSpent: team.totalSpent || 0,
+          };
+        })
+        .sort((a, b) => b.totalRating - a.totalRating);
+
+      recentMatches.unshift({
+        roomCode,
+        date: new Date().toISOString(),
+        leaderboard,
+      });
+
+      if (recentMatches.length > 5) recentMatches.pop();
+      // ✅ END ADDITION
+
       room.auctionState.started = false;
       room.auctionState.currentPlayer = null;
       room.auctionState.currentBid = 0;
@@ -878,6 +907,10 @@ io.on("connection", (socket) => {
     const roomObj = rooms[room];
     if (!roomObj) return;
 
+    if (!roomObj.appearedPlayerIds.includes(playerId)) {
+      roomObj.appearedPlayerIds.push(playerId);
+    }
+
     const user = roomObj.users.find((u) => u.id === socket.id);
     if (user && user.name === roomObj.admin) {
       roomObj.playerTeams[playerId] = { team: team, price: price };
@@ -945,6 +978,15 @@ io.on("connection", (socket) => {
         roomObj,
         roomObj.selectedPlayersForAuction
       );
+    }
+  });
+
+  socket.on("playerUnsold", ({ room, playerId }) => {
+    const roomObj = rooms[room];
+    if (!roomObj) return;
+
+    if (!roomObj.appearedPlayerIds.includes(playerId)) {
+      roomObj.appearedPlayerIds.push(playerId);
     }
   });
 

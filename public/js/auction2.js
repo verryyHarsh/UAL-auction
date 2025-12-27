@@ -1076,6 +1076,10 @@ try {
     if (roomState.teamAssignments) {
       teamCount = Object.keys(roomState.teamAssignments).length;
     }
+    if (roomState.appearedPlayerIds) {
+      const appeared = new Set(roomState.appearedPlayerIds);
+      players = players.filter(p => !appeared.has(p.id));
+    }
 
     userTeamAssignments = roomState.teamAssignments || {};
     activeTeams = {};
@@ -1177,7 +1181,7 @@ try {
     const mostExpensivePlayer = findMostExpensivePlayer();
     updateResultsHighestBidInfo(mostExpensivePlayer);
 
-    if (rankedTeams.length > 0) {
+    if (rankedTeams.length >  0) {
       updateResultsMVPInfo(rankedTeams[0]);
     }
 
@@ -1366,12 +1370,18 @@ try {
             basePrice: currentPlayer.basePrice,
           });
         } else {
-          if (isAdmin && auctionStarted) {
-            setTimeout(() => {
-              selectNextPlayer();
-            }, 1000);
+            if (isAdmin && auctionStarted) {
+
+              socket.emit("playerUnsold", {
+                room: roomCode,
+                playerId: currentPlayer.id,
+              });
+
+              setTimeout(() => {
+                selectNextPlayer();
+              }, 1000);
+            }
           }
-        }
       }
     }, 1000);
   }

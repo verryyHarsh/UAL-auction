@@ -402,7 +402,7 @@
           gap: 0.25rem;
           text-align: center;
         }
-        
+
         .contact-link span {
           display: block;
           width: 100%;
@@ -566,8 +566,14 @@
       }
 
       @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(-10px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+          opacity: 0;
+          transform: translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
       }
 
       /* Back Button */
@@ -627,19 +633,19 @@
         .contact-container {
           padding: 1.25rem;
         }
-        
+
         .contact-header h2 {
           font-size: 2rem;
         }
-        
+
         .contact-header p {
           font-size: 1.1rem;
         }
-        
+
         .section-title h3 {
           font-size: 1.5rem;
         }
-        
+
         .section-icon {
           width: 35px;
           height: 35px;
@@ -651,64 +657,64 @@
         .header {
           padding: 0.75rem 1rem;
         }
-        
+
         .header h1 {
           font-size: 1.8rem;
         }
-        
+
         .hamburger-menu {
           padding: 6px;
         }
-        
+
         .hamburger-line {
           width: 20px;
           height: 2px;
         }
-        
+
         .content-wrapper {
           padding: 0.5rem;
         }
-        
+
         .contact-container {
           padding: 1rem;
           border-radius: 10px;
         }
-        
+
         .contact-header h2 {
           font-size: 1.6rem;
           margin-bottom: 0.25rem;
         }
-        
+
         .contact-header p {
           font-size: 1rem;
         }
-        
+
         .section-title {
           margin-bottom: 1rem;
         }
-        
+
         .section-title h3 {
           font-size: 1.3rem;
         }
-        
+
         .section-icon {
           width: 32px;
           height: 32px;
           font-size: 0.9rem;
           margin-right: 0.75rem;
         }
-        
+
         .team-section p,
         .form-section p {
           font-size: 0.9rem;
           margin-bottom: 1rem;
           line-height: 1.5;
         }
-        
+
         .nav-menu {
           width: 180px;
         }
-        
+
         .nav-menu li a {
           padding: 0.8rem 1.2rem;
           font-size: 0.9rem;
@@ -719,23 +725,23 @@
         .contact-header h2 {
           font-size: 1.4rem;
         }
-        
+
         .contact-header p {
           font-size: 0.9rem;
         }
-        
+
         .section-title h3 {
           font-size: 1.2rem;
         }
-        
+
         .member-name {
           font-size: 1rem;
         }
-        
+
         .member-role {
           font-size: 0.8rem;
         }
-        
+
         .contact-link {
           font-size: 0.8rem;
         }
@@ -763,6 +769,7 @@
           <li><a href="lobby.html">Home</a></li>
           <li><a href="rules.html">Rules</a></li>
           <li><a href="contact.html">Contact</a></li>
+          <li><a href="Leaderboard.html">RecentLeaderboard</a></li>
         </ul>
       </header>
 
@@ -785,10 +792,11 @@
                 <div class="section-icon"><i class="fas fa-users"></i></div>
                 <h3>Our Team</h3>
               </div>
-              <p style="color: #555; line-height: 1.6; margin-bottom: 1.5rem;">
-                Meet the dedicated team behind the Ultimate Auction League. We're here to ensure you have the best auction experience.
+              <p style="color: #555; line-height: 1.6; margin-bottom: 1.5rem">
+                Meet the dedicated team behind the Ultimate Auction League.
+                We're here to ensure you have the best auction experience.
               </p>
-              
+
               <div class="team-members">
                 <!-- Team Member 1 -->
                 <div class="team-member">
@@ -796,7 +804,10 @@
                   <div class="member-name">HARSH CHAVAN</div>
                   <div class="member-role">Lead Developer</div>
                   <div class="member-contact">
-                    <a href="mailto:harshchavan404@gmail.com" class="contact-link">
+                    <a
+                      href="mailto:harshchavan404@gmail.com"
+                      class="contact-link"
+                    >
                       <i class="fas fa-envelope"></i>
                       <span>harshchavan404@gmail.com</span>
                     </a>
@@ -832,21 +843,34 @@
                 <div class="section-icon"><i class="fas fa-envelope"></i></div>
                 <h3>Send Us a Message</h3>
               </div>
-              <p style="color: #555; line-height: 1.6; margin-bottom: 1.5rem;">
-                Have questions, feedback, or need support? Send us a message and we'll get back to you within 24 hours.
+              <p style="color: #555; line-height: 1.6; margin-bottom: 1.5rem">
+                Have questions, feedback, or need support? Send us a message and
+                we'll get back to you within 24 hours.
               </p>
-              
+
               <form id="contactForm" class="contact-form">
                 <div class="form-group">
                   <label for="name">Your Name</label>
-                  <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    required
+                    placeholder="Enter your full name"
+                  />
                 </div>
-                
+
                 <div class="form-group">
                   <label for="email">Email Address</label>
-                  <input type="email" id="email" name="email" required placeholder="Enter your email address">
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    required
+                    placeholder="Enter your email address"
+                  />
                 </div>
-                
+
                 <div class="form-group">
                   <label for="subject">Subject</label>
                   <select id="subject" name="subject" required>
@@ -859,17 +883,22 @@
                     <option value="partnership">Partnership Opportunity</option>
                   </select>
                 </div>
-                
+
                 <div class="form-group">
                   <label for="message">Your Message</label>
-                  <textarea id="message" name="message" required placeholder="Type your message here..."></textarea>
+                  <textarea
+                    id="message"
+                    name="message"
+                    required
+                    placeholder="Type your message here..."
+                  ></textarea>
                 </div>
-                
+
                 <button type="submit" class="submit-btn">
                   <i class="fas fa-paper-plane"></i> Send Message
                 </button>
               </form>
-              
+
               <!-- Success Message -->
               <div id="successMessage" class="success-message">
                 <div class="success-icon">
@@ -882,7 +911,7 @@
           </div>
 
           <!-- Back to Lobby Button -->
-          <div style="text-align: center; margin-top: 1.5rem;">
+          <div style="text-align: center; margin-top: 1.5rem">
             <a href="lobby.html" class="back-button">
               <i class="fas fa-arrow-left"></i> Back to Lobby
             </a>
@@ -898,88 +927,91 @@
 
     <script>
       // Hamburger menu functionality
-      document.addEventListener('DOMContentLoaded', function() {
-        const hamburgerMenu = document.getElementById('hamburgerMenu');
-        const navMenu = document.getElementById('navMenu');
-        
-        hamburgerMenu.addEventListener('click', function() {
-          navMenu.classList.toggle('active');
+      document.addEventListener("DOMContentLoaded", function () {
+        const hamburgerMenu = document.getElementById("hamburgerMenu");
+        const navMenu = document.getElementById("navMenu");
+
+        hamburgerMenu.addEventListener("click", function () {
+          navMenu.classList.toggle("active");
         });
-        
+
         // Close menu when clicking outside
-        document.addEventListener('click', function(event) {
-          if (!hamburgerMenu.contains(event.target) && !navMenu.contains(event.target)) {
-            navMenu.classList.remove('active');
+        document.addEventListener("click", function (event) {
+          if (
+            !hamburgerMenu.contains(event.target) &&
+            !navMenu.contains(event.target)
+          ) {
+            navMenu.classList.remove("active");
           }
         });
-        
+
         // Create grid lines dynamically
-        const gridContainer = document.getElementById('gridContainer');
+        const gridContainer = document.getElementById("gridContainer");
         const gridSize = 50;
-        
+
         function createGrid() {
           const containerWidth = gridContainer.clientWidth;
           const containerHeight = gridContainer.clientHeight;
-          
+
           const cols = Math.ceil(containerWidth / gridSize);
           const rows = Math.ceil(containerHeight / gridSize);
-          
+
           gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
           gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-          
-          gridContainer.innerHTML = '';
-          
+
+          gridContainer.innerHTML = "";
+
           for (let i = 0; i < cols * rows; i++) {
-            const gridLine = document.createElement('div');
-            gridLine.classList.add('grid-line');
+            const gridLine = document.createElement("div");
+            gridLine.classList.add("grid-line");
             gridContainer.appendChild(gridLine);
-            
-            gridLine.addEventListener('mouseenter', function() {
-              this.classList.add('hover-effect');
+
+            gridLine.addEventListener("mouseenter", function () {
+              this.classList.add("hover-effect");
             });
-            
-            gridLine.addEventListener('mouseleave', function() {
-              this.classList.remove('hover-effect');
+
+            gridLine.addEventListener("mouseleave", function () {
+              this.classList.remove("hover-effect");
             });
           }
         }
-        
+
         createGrid();
-        window.addEventListener('resize', createGrid);
-        
+        window.addEventListener("resize", createGrid);
+
         // Contact form submission
-        const contactForm = document.getElementById('contactForm');
-        const successMessage = document.getElementById('successMessage');
-        
-        contactForm.addEventListener('submit', function(e) {
+        const contactForm = document.getElementById("contactForm");
+        const successMessage = document.getElementById("successMessage");
+
+        contactForm.addEventListener("submit", function (e) {
           e.preventDefault();
-          
+
           // Get form data
           const formData = new FormData(contactForm);
-          const name = formData.get('name');
-          const email = formData.get('email');
-          const subject = formData.get('subject');
-          const message = formData.get('message');
-          
+          const name = formData.get("name");
+          const email = formData.get("email");
+          const subject = formData.get("subject");
+          const message = formData.get("message");
+
           // Here you would typically send the data to a server
           // For demo purposes, we'll just show the success message
-          
+
           // Create email content
           const emailSubject = `UAL Contact: ${subject}`;
           const emailBody = `Name: ${name}%0D%0AEmail: ${email}%0D%0A%0D%0AMessage:%0D%0A${message}`;
-          
+
           // In a real application, you would send this to your backend
-          console.log('Form submitted:', { name, email, subject, message });
-          
+          console.log("Form submitted:", { name, email, subject, message });
+
           // Show success message
-          successMessage.classList.add('show');
+          successMessage.classList.add("show");
           contactForm.reset();
-          
+
           // Hide success message after 5 seconds
           setTimeout(() => {
-            successMessage.classList.remove('show');
+            successMessage.classList.remove("show");
           }, 5000);
-          
+
           // Optional: Create a mailto link as fallback
           // window.location.href = `mailto:support@ual.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
         });

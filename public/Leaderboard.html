@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leaderboard</title>
+    <link rel="shortcut icon" type="image/png" href="/images/logo.png" />
+
+    <!-- Bootstrap 5 CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --primary-blue: #0a1e3d;
+        --secondary-blue: #1a3a6c;
+        --accent-blue: #4a90e2;
+      }
+
+      body {
+        background: linear-gradient(
+          135deg,
+          var(--primary-blue) 0%,
+          var(--secondary-blue) 100%
+        );
+        color: white;
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .leaderboard-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: rgba(10, 30, 61, 0.9);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        border: 2px solid var(--accent-blue);
+      }
+
+      .leaderboard-title {
+        color: white;
+        border-bottom: 2px solid var(--accent-blue);
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+      }
+
+      /* Match card styles */
+      .match-card {
+        background: rgba(26, 58, 108, 0.7);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--accent-blue);
+        transition: transform 0.2s;
+      }
+
+      .match-card:hover {
+        transform: translateY(-3px);
+        background: rgba(26, 58, 108, 0.9);
+      }
+
+      .match-card.winner {
+        border-left-color: #ffd700;
+      }
+
+      /* Status badges */
+      .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+      }
+
+      .status-completed {
+        background-color: #28a745;
+        color: white;
+      }
+
+      .status-live {
+        background-color: #dc3545;
+        color: white;
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.7;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      /* Team styling */
+      .team-logo {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--secondary-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.2rem;
+        color: white;
+        border: 2px solid var(--accent-blue);
+      }
+
+      .team-name {
+        font-weight: 600;
+        font-size: 1.1rem;
+      }
+
+      .team-score {
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+
+      /* VS separator */
+      .vs-separator {
+        color: var(--accent-blue);
+        font-weight: 700;
+        background: rgba(10, 30, 61, 0.8);
+        padding: 5px 15px;
+        border-radius: 50%;
+        border: 2px solid var(--accent-blue);
+      }
+
+      /* Result section */
+      .match-result {
+        background: rgba(10, 30, 61, 0.8);
+        padding: 10px;
+        border-radius: 8px;
+        font-weight: 600;
+        color: #ffd700;
+        border: 1px solid rgba(74, 144, 226, 0.3);
+      }
+
+      /* Table styling for standings */
+      .standings-table {
+        background: rgba(26, 58, 108, 0.7);
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--accent-blue);
+      }
+
+      .standings-table thead {
+        background: var(--secondary-blue);
+        color: white;
+      }
+
+      .standings-table tbody tr:hover {
+        background-color: rgba(74, 144, 226, 0.1);
+      }
+
+      /* Refresh button */
+      .refresh-btn {
+        background: linear-gradient(90deg, var(--accent-blue) 0%, #1a73e8 100%);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        transition: all 0.3s;
+      }
+
+      .refresh-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+      }
+
+      /* Footer */
+      .leaderboard-footer {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.9rem;
+        border-top: 1px solid rgba(74, 144, 226, 0.3);
+        padding-top: 15px;
+      }
+
+      /* Empty state */
+      .empty-state {
+        text-align: center;
+        padding: 50px 20px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 20px;
+        color: var(--accent-blue);
+        opacity: 0.7;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="leaderboard-container">
+      <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="leaderboard-title">IPL Auction Leaderboard</h2>
+        <button class="refresh-btn" id="refreshBtn">
+          <i class="fas fa-sync-alt me-2"></i>Refresh
+        </button>
+      </div>
+
+      <h4 class="mb-4">Recent Matches</h4>
+
+      <div id="leaderboard">
+        <!-- Your JavaScript will populate this div -->
+        <!-- Example of what your JS might generate: -->
+        <!--
+      <div class="match-card winner">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <span class="text-muted">March 15, 2024</span>
+          <span class="status-badge status-completed">Completed</span>
+        </div>
+        <div class="row align-items-center">
+          <div class="col-5 text-end">
+            <div class="team-name">CSK</div>
+            <div class="team-score">185</div>
+          </div>
+          <div class="col-2 text-center">
+            <div class="vs-separator">VS</div>
+          </div>
+          <div class="col-5">
+            <div class="team-name">MI</div>
+            <div class="team-score">172</div>
+          </div>
+        </div>
+        <div class="match-result text-center mt-3">
+          CSK won by 13 runs
+        </div>
+      </div>
+      --></div>
+
+      <div class="leaderboard-footer text-center mt-4">
+        <p class="mb-0">
+          <i class="fas fa-info-circle me-1"></i>
+          Leaderboard updates automatically
+        </p>
+      </div>
+    </div>
+
+    <!-- Font Awesome for icons (if you need them) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+
+    <!-- Your existing leaderboard.js - NO CHANGES -->
+    <script src="/js/leaderboard.js"></script>
+  </body>
+</html>
